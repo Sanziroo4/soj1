@@ -49,7 +49,7 @@ test("Оқу жолы, процессор, командалар, пайплай�
   await expect(cpu.locator(".now")).toContainText("$t2 ← 12");
   await cpu.getByRole("button", { name: "Алдыңғы қадам", exact: true }).click();
   await expect(cpu.locator(".now dl")).toContainText("0");
-  await cpu.getByLabel("Команда t0").fill("9");
+  await cpu.getByLabel("Команда t0", { exact: true }).fill("9");
   await expect(cpu.locator(".now h3")).toHaveText("Бір команда. Бес кезең.");
   await cpu.getByRole("button", { name: "sw Жадқа жазу" }).click();
   await cpu.getByRole("button", { name: "MEM Жад" }).click();
@@ -57,10 +57,10 @@ test("Оқу жолы, процессор, командалар, пайплай�
   await cpu.getByRole("button", { name: "Алдыңғы қадам", exact: true }).click();
   await expect(cpu.locator(".now dl")).toContainText("42");
   await cpu.getByRole("button", { name: "beq Тармақталу" }).click();
-  await cpu.getByLabel("Команда t1").fill("9");
+  await cpu.getByLabel("Команда t1", { exact: true }).fill("9");
   await cpu.getByRole("button", { name: "EX Есептеу" }).click();
   await expect(cpu.locator(".now")).toContainText("Тармақ алынды");
-  await cpu.getByLabel("Команда t1").fill("5");
+  await cpu.getByLabel("Команда t1", { exact: true }).fill("5");
   await cpu.getByRole("button", { name: "EX Есептеу" }).click();
   await expect(cpu.locator(".now")).toContainText("жалған");
   await page
@@ -204,11 +204,12 @@ test("Ойнату, кідірту, жылдамдық, ASM ашу және то
 }) => {
   await page.goto("/#instruction");
   const cpu = page.locator("#instruction");
+  await cpu.locator(".controls select").selectOption("1400");
   await cpu.getByRole("button", { name: "Бастау", exact: true }).click();
   await expect(cpu.locator(".stage-track .current")).toContainText("IF");
   await cpu.getByRole("button", { name: "Кідірту", exact: true }).click();
   const old = await cpu.locator(".controls>.mono").textContent();
-  await page.waitForTimeout(850);
+  await page.waitForTimeout(1500);
   expect(await cpu.locator(".controls>.mono").textContent()).toBe(old);
   await cpu.getByRole("combobox").selectOption("350");
   await cpu.getByRole("button", { name: "Бастау", exact: true }).click();
@@ -217,7 +218,7 @@ test("Ойнату, кідірту, жылдамдық, ASM ашу және то
   await cpu.getByRole("button", { name: "lw Жадтан оқу" }).click();
   await cpu.getByRole("button", { name: "WB Жазу" }).click();
   await expect(cpu.locator(".now")).toContainText("$t2 ← 42");
-  await cpu.getByLabel("Команда жад мәні").fill("-17");
+  await cpu.getByLabel("Команда жад мәні", { exact: true }).fill("-17");
   await cpu.getByRole("button", { name: "WB Жазу" }).click();
   await expect(cpu.locator(".now")).toContainText("$t2 ← -17");
   await page

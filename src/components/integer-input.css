@@ -1,0 +1,64 @@
+.integer-control {
+  position: relative;
+  display: block;
+  min-width: 0;
+  width: 100%;
+}
+.integer-field .integer-control > input.integer-value {
+  width: 100%;
+  padding-right: 62px;
+}
+.integer-field .integer-sign {
+  position: absolute;
+  right: 7px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  min-height: 44px;
+  padding: 0;
+  border: 1px solid #445834;
+  border-radius: 10px;
+  background: #23321b;
+  color: var(--lime, #d2ff5a);
+  font:
+    500 24px/1 "IBM Plex Mono",
+    monospace;
+  box-shadow: none;
+}
+.integer-field .integer-sign:hover {
+  background: #354a25;
+  border-color: #a4cf57;
+}
+.integer-field .integer-sign:active {
+  transform: translateY(-50%) scale(0.95);
+}
+.integer-field .integer-sign:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.integer-field {
+  container-type: inline-size;
+}
+@container (max-width:125px) {
+  .integer-control {
+    display: grid;
+    gap: 8px;
+  }
+  .integer-field .integer-control > input.integer-value {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+  .integer-field .integer-sign {
+    position: static;
+    transform: none;
+    width: 100%;
+    min-height: 44px;
+  }
+  .integer-field .integer-sign:active {
+    transform: scale(0.97);
+  }
+}
