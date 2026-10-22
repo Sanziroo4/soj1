@@ -1,4 +1,10 @@
-import { test, expect } from "@playwright/test";
+import { test, expect, type Locator } from "@playwright/test";
+
+async function openInspector(lab: Locator) {
+  const inspector = lab.locator(".lab-inspector");
+  if (!(await inspector.evaluate((el) => (el as HTMLDetailsElement).open)))
+    await inspector.locator(":scope > summary").click();
+}
 
 test("Бес есеп бір басумен аяқталады, жылжыту мен нәтижені көрсету ойнатуды бұзбайды", async ({
   page,
@@ -19,6 +25,7 @@ test("Бес есеп бір басумен аяқталады, жылжыту �
     await lab
       .getByRole("button", { name: "Есепті орындау", exact: true })
       .click();
+    await openInspector(lab);
     await lab.locator(".machine-state").scrollIntoViewIfNeeded();
     await expect(lab.locator(".execution-flow")).toHaveClass(/running/);
     await expect(lab.locator(".flow-heading")).toContainText("Аяқталды", {
@@ -29,7 +36,7 @@ test("Бес есеп бір басумен аяқталады, жылжыту �
     const [n, max] = count.split("/").map(Number);
     expect(n).toBe(max);
     await expect(
-      lab.getByRole("button", { name: "Бастау", exact: true }),
+      lab.getByRole("button", { name: "Есепті орындау", exact: true }),
     ).toBeVisible();
   }
 });
@@ -45,6 +52,7 @@ test("Дайын мәндер автоматты іске қосылады; нә
   await expect(lab.locator(".grade-display strong")).toHaveText("F", {
     timeout: 5000,
   });
+  await openInspector(lab);
   await expect(lab.locator(".console pre")).toHaveText("F");
   await lab.getByRole("button", { name: "101", exact: true }).click();
   await expect(lab.locator(".grade-display strong")).toHaveText("!");
@@ -54,6 +62,7 @@ test("Дайын мәндер автоматты іске қосылады; нә
   await lab.getByRole("button", { name: "x = 5", exact: true }).click();
   await expect(lab.locator(".lab-visual>p")).toContainText("f(5) = 24");
   await expect(lab.locator(".function-chart .point-ring")).toHaveCount(1);
+  await openInspector(lab);
   await expect(lab.locator(".console pre")).toHaveText("f(x) = 24");
   await lab.getByRole("button", { name: "Алдыңғы қадам", exact: true }).click();
   await lab.getByRole("button", { name: "Қайта бастау", exact: true }).click();

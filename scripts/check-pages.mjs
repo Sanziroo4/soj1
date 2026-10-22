@@ -55,6 +55,11 @@ try {
     .locator("#lab")
     .getByRole("button", { name: "Нәтижеге өту" })
     .click();
+  assert.equal(
+    await page.locator(".lab-inspector").evaluate((el) => el.open),
+    false,
+  );
+  await page.locator(".lab-inspector > summary").click();
   assert.match(await page.locator(".console pre").innerText(), /Max: 12/);
   const d = page.waitForEvent("download");
   await page

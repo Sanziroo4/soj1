@@ -1,0 +1,191 @@
+.controls {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 22px 0 28px;
+  width: 100%;
+  border: 0;
+  font-size: 14px;
+}
+.controls button {
+  min-height: 48px;
+  min-width: 48px;
+  border-radius: 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+}
+.controls .playback-primary {
+  padding: 13px 22px;
+  min-width: 145px;
+  font-size: 16px;
+  font-weight: 750;
+}
+.playback-steps {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.playback-steps button {
+  padding: 10px;
+  background: #1b221d;
+  border: 1px solid #333d35;
+  color: #e7eee4;
+}
+.playback-steps button:hover {
+  border-color: var(--lime);
+  background: #263221;
+}
+.controls .speed {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+  margin-left: auto;
+  font-size: 14px;
+  color: var(--dim);
+}
+.controls .speed select {
+  min-height: 46px;
+  min-width: 75px;
+  padding: 8px 12px;
+  font-size: 16px;
+  border-radius: 12px;
+  background: #101612;
+  color: #edf4e9;
+  border: 1px solid #354331;
+}
+.controls .loop-control {
+  position: relative;
+  display: inline-flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  min-height: 46px;
+  padding: 8px 12px;
+  border: 1px solid #354331;
+  border-radius: 12px;
+  font-size: 14px;
+  cursor: pointer;
+  color: var(--dim);
+  white-space: nowrap;
+}
+.controls .loop-control.enabled {
+  color: var(--lime);
+  border-color: #6a883e;
+  background: #25311a;
+}
+.controls .loop-control input {
+  position: absolute;
+  opacity: 0;
+  width: 100%;
+  height: 100%;
+  left: 0;
+  top: 0;
+  cursor: pointer;
+  margin: 0;
+}
+.controls .loop-control:has(input:focus-visible) {
+  outline: 2px solid var(--lime);
+  outline-offset: 4px;
+}
+.controls > .mono {
+  font-size: 14px;
+  white-space: nowrap;
+}
+.playback-progress {
+  position: absolute;
+  bottom: 7px;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: #29332b;
+  border-radius: 20px;
+  overflow: hidden;
+}
+.playback-progress > span {
+  display: block;
+  height: 100%;
+  width: 100%;
+  background: linear-gradient(90deg, var(--lime), var(--cyan));
+  transform-origin: left;
+  transition: transform 0.18s ease;
+  border-radius: 20px;
+}
+.controls button:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+.controls button svg {
+  flex-shrink: 0;
+}
+@media (max-width: 750px) {
+  .controls {
+    gap: 10px;
+  }
+  .controls .speed {
+    margin-left: 0;
+  }
+  .controls .loop-control {
+    margin-left: auto;
+  }
+  .controls > .mono {
+    margin-left: auto;
+  }
+  .controls .playback-primary {
+    flex: 1;
+    min-width: 145px;
+  }
+  .playback-steps {
+    flex-shrink: 0;
+  }
+}
+@media (max-width: 450px) {
+  .controls {
+    padding-top: 18px;
+    gap: 8px;
+  }
+  .controls .playback-primary {
+    font-size: 14px;
+    padding: 11px 13px;
+    min-width: 125px;
+  }
+  .controls button {
+    min-width: 44px;
+    min-height: 46px;
+  }
+  .playback-steps {
+    gap: 4px;
+  }
+  .playback-steps button {
+    padding: 9px;
+  }
+  .controls .speed {
+    gap: 7px;
+  }
+  .controls .speed > span {
+    font-size: 14px;
+  }
+  .controls .loop-control {
+    padding: 8px;
+    font-size: 14px;
+  }
+  .controls .loop-control svg {
+    display: none;
+  }
+  .controls > .mono {
+    font-size: 14px;
+  }
+  .controls .speed select {
+    font-size: 14px;
+    min-width: 66px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .playback-progress > span {
+    transition: none;
+  }
+}

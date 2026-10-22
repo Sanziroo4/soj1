@@ -3,181 +3,196 @@ import { usePlayback } from "./usePlayback";
 import { IntegerInput } from "./IntegerInput";
 import { useState } from "react";
 import { format } from "../model/mips";
-import { Cpu, Database, Layers, ArrowRight } from "lucide-react";
+import {
+  Cpu,
+  Database,
+  Layers,
+  ArrowRight,
+  Code2,
+  MapPin,
+  GitBranch,
+  Braces,
+} from "lucide-react";
 export function MemoryLesson() {
   const [level, setLevel] = useState(0),
     [retrieved, setRetrieved] = useState(false);
+  const play = usePlayback(level + 2),
+    current = level - play.index + 1;
   const names = ["Регистр", "Кэш", "RAM"];
-  const play = usePlayback(level + 2);
-  const current = level - play.index + 1;
+  function send(i = level) {
+    setLevel(i);
+    setRetrieved(true);
+    play.setIndex(0);
+    play.setPlaying(true);
+  }
   return (
     <div
-      className="memory-section"
+      className="memory-section panel"
       ref={play.viewportRef}
       data-memory-step={play.index}
+      data-in-view={play.inView}
     >
-      <div>
-        <span className="eyebrow">ДЕРЕКТЕР ҚАЙДА ТҰРАДЫ?</span>
-        <h3>Бір дерек. Үш түрлі қашықтық.</h3>
+      <div className="memory-copy">
+        <span className="eyebrow">Деректер қозғалысы</span>
+        <h3>
+          42 санының
+          <br />
+          <span>саяхаты.</span>
+        </h3>
         <p>
-          Регистр — жұмыс үстеліңдегі қағаз. Кэш — қасыңдағы сөре. RAM — үлкен
-          кітапхана. Бұл салыстыру рөлін түсіндіреді; нақты жылдамдық құрылғыға
-          байланысты.
+          Деректің қайдан келетінін таңда. Оның ALU-ға дейінгі жолын бақыла.
         </p>
         <div className="memory-tabs">
           {names.map((n, i) => (
             <button
-              className={level === i ? "active" : ""}
-              onClick={() => {
-                setLevel(i);
-                setRetrieved(true);
-                play.setIndex(0);
-                play.setPlaying(true);
-              }}
               key={n}
+              className={level === i ? "active" : ""}
+              onClick={() => send(i)}
             >
               {n}
             </button>
           ))}
         </div>
-        <p>
+        <p className="memory-definition">
           {
             [
-              "Регистрлер команда операндтарын тікелей береді. MIPS-та 32 жалпы мақсатты регистр бар, әрқайсысы 32 бит.",
-              "Кэш — жақында қолданылған деректердің аппараттық көшірмесі. Кәдімгі MIPS командасы кэш регистрін жеке атамайды.",
-              "RAM — бағдарламалар мен деректерге арналған жедел жад. lw/sw архитектуралық адрес арқылы қатынайды.",
+              "Регистр — процессор дәл қазір қолданатын мәндерді сақтайды.",
+              "Кэш — жиі қажет болатын деректердің жақын көшірмесі.",
+              "RAM — бағдарлама мен деректер сақталатын жедел жад.",
             ][level]
           }
         </p>
-        <button
-          onClick={() => {
-            setRetrieved(true);
-            play.setIndex(0);
-            play.setPlaying(true);
-          }}
-        >
-          42 мәнін ALU-ға жеткізу <ArrowRight size={15} />
+        <button className="plain" onClick={() => send()}>
+          42 мәнін ALU-ға жеткізу <ArrowRight size={20} />
         </button>
-        <p className="lime" aria-live="polite">
-          {retrieved
-            ? [
-                "Регистр → ALU: операнд 42 дайын.",
-                "Кэште бар деп аламыз → регистр → ALU: 42.",
-                "Кэште жоқ деп аламыз → RAM → кэш → регистр → ALU: 42.",
-              ][level]
-            : "Деректің жолын көру үшін батырманы басыңыз."}
-        </p>
       </div>
-      <div
-        className={`memory-stack memory-animated`}
-        data-current={retrieved ? current : "none"}
-      >
-        <div>
-          <Cpu />
-          <span>
-            Регистрлер<strong>Аз көлем · тікелей операндтар</strong>
-          </span>
-          <code>42</code>
-        </div>
-        <div>
-          <Layers />
-          <span>
-            Кэш<strong>Деректердің жақын көшірмесі</strong>
-          </span>
-          <code>42</code>
-        </div>
-        <div>
-          <Database />
-          <span>
-            RAM<strong>Негізгі деректер кеңістігі</strong>
-          </span>
-          <code>42</code>
-        </div>
+      <div className="memory-stage">
         <div
-          className={`memory-alu ${retrieved && current === -1 ? "active" : ""}`}
+          className="memory-stack memory-animated"
+          data-current={retrieved ? current : "none"}
         >
-          <Cpu />
-          <span>
-            ALU
-            <strong>
-              {retrieved && current === -1 ? "Операнд дайын" : "42 мәнін күту"}
-            </strong>
-          </span>
-          <code>{retrieved && current === -1 ? "42" : "—"}</code>
+          {[
+            { n: "RAM", desc: "Негізгі жад", l: 2, icon: Database },
+            { n: "Кэш", desc: "Жақын көшірме", l: 1, icon: Layers },
+            { n: "Регистрлер", desc: "Жұмыс мәні", l: 0, icon: Cpu },
+            { n: "ALU", desc: "Есептеуге дайын", l: -1, icon: Cpu },
+          ].map(({ n, desc, l, icon: Icon }) => (
+            <div
+              className={`memory-node ${l === -1 ? "memory-alu" : ""} ${retrieved && current === l ? "active" : ""} ${l > level ? "outside-route" : ""} ${retrieved && play.index > 0 && l >= current && l <= level ? "visited" : ""}`}
+              key={n}
+            >
+              <span className="memory-node-icon">
+                <Icon size={25} />
+              </span>
+              <span>
+                <strong>{n}</strong>
+                <span>{desc}</span>
+              </span>
+              <code key={retrieved && current === l ? play.index : "static"}>
+                {retrieved && play.index > 0 && l >= current && l <= level
+                  ? "42"
+                  : "—"}
+              </code>
+            </div>
+          ))}
         </div>
-        {retrieved && (
-          <>
-            <p className="memory-status" aria-live="polite">
-              {play.index === 0
-                ? "Деректі іздеу…"
-                : current === -1
-                  ? "✓ 42 мәні ALU-ға жетті"
-                  : `${names[current]} → 42 мәні тасымалдануда`}
-            </p>
-            <section className="memory-controls">
-              <Controls {...play} max={level + 2} />
-            </section>
-          </>
-        )}
-        <small>
-          Бұл жеке ұғымдық көрініс. Оқу интерпретаторында кэш пен RAM таймингі
-          модельденбейді.
-        </small>
+        <p className="memory-status" aria-live="polite">
+          {!retrieved
+            ? "Жолды таңдап, деректі жібер."
+            : play.index === 0
+              ? "Деректі іздеу…"
+              : current === -1
+                ? "✓ 42 мәні ALU-ға жетті"
+                : `${names[current]} → 42 мәні тасымалдануда`}
+        </p>
+        {retrieved && <Controls {...play} max={level + 2} />}
       </div>
     </div>
   );
 }
+const concepts = [
+  {
+    icon: Code2,
+    title: "MIPS — командалар тілі",
+    text: "ISA процессор қандай командаларды түсінетінін анықтайды. Ассемблер — сол командалардың жазылуы, MARS — оларды жинап, орындап көруге арналған құрал.",
+    example: "add $t2, $t0, $t1",
+  },
+  {
+    icon: Braces,
+    title: "Регистр — шағын жұмыс орны",
+    text: "32 биттік мән регистрде сақталады. Команда мәндерді оқып, есептеп, нәтижені басқа регистрге жаза алады.",
+    example: "$t0 = 7   $t1 = 5   →   $t2 = 12",
+  },
+  {
+    icon: MapPin,
+    title: "Адрес — деректің орны",
+    text: ".data деректерді, .text командаларды сипаттайды. Жад адресі мен сол жерде сақталған мән — екі бөлек нәрсе.",
+    example: "[0x10010000] = 42",
+  },
+  {
+    icon: GitBranch,
+    title: "Шарт — бағытты таңдау",
+    text: "Label — кодтағы орынның аты. Шарт ақиқат болса, beq сол белгіге өтеді. syscall енгізу мен шығаруды іске қосады.",
+    example: "beq $t0, $t1, equal",
+  },
+];
+const roles = [
+  { name: "$zero", text: "Әрқашан нөл. Оған жазу мәнін өзгертпейді." },
+  { name: "$t0–$t9", text: "Уақытша мәндерге арналған регистрлер." },
+  {
+    name: "$s0–$s7",
+    text: "Шақырулар арасында сақталатын мәндер. Оларды сақтау — бағдарламалау келісімі.",
+  },
+  {
+    name: "$v0 / $a0",
+    text: "Syscall қызметінің коды және оның аргументі. Мысалы, $v0 = 1 бүтін санды шығарады.",
+  },
+];
 export function Basics() {
   const [base, setBase] = useState<"DEC" | "HEX" | "BIN">("DEC"),
-    [value, setValue] = useState(42);
+    [value, setValue] = useState(42),
+    [role, setRole] = useState(0);
   return (
     <>
       <div className="basics-grid">
-        {[
-          [
-            "ISA → тіл → құрал",
-            "MIPS — процессор түсінетін командалар жиынының архитектурасы (ISA). Ассемблер тілі — командалардың мәтіндік жазылуы. Ассемблер құралы мәтінді машиналық кодқа айналдырады. MARS — жинау және симуляция ортасы.",
-          ],
-          [
-            "32 бит және регистр",
-            "32 бит — 32 екілік разряд. Таңбалы диапазон: −2 147 483 648…2 147 483 647. Регистрлер шағын мәндерді сақтайды; жад адресі деректің орналасуын көрсетеді, деректің өзі емес.",
-          ],
-          [
-            "Команда және label",
-            "Команда: add $t2, $t0, $t1. Label — кодтағы орынның аты, мысалы equal:. beq теңдік орындалғанда осы белгіге өтеді. Label — орындалатын жеке команда емес.",
-          ],
-          [
-            ".data · .text · syscall",
-            ".data — жолдар мен деректер, .text — орындалатын код. syscall қызметі $v0 арқылы таңдалады: 5 енгізеді, 1 сан шығарады, 4 жол шығарады, 10 аяқтайды. $a0 — шығару аргументі.",
-          ],
-        ].map(([title, text], i) => (
-          <article className="panel lesson-card" key={title}>
-            <span className="eyebrow">0{i + 1}</span>
+        {concepts.map(({ icon: Icon, title, text, example }) => (
+          <article className="lesson-card panel" key={title}>
+            <span className="lesson-icon">
+              <Icon size={28} />
+            </span>
             <h3>{title}</h3>
             <p>{text}</p>
+            <code>{example}</code>
           </article>
         ))}
       </div>
-      <div className="panel register-lesson">
-        <div>
-          <span className="eyebrow">РЕГИСТРЛЕР КАРТАСЫ</span>
-          <h3>Әр атаудың өз рөлі бар.</h3>
-          <dl>
-            <dt>$zero</dt>
-            <dd>Әрқашан 0; жазу нәтиже бермейді.</dd>
-            <dt>$t0–$t9</dt>
-            <dd>Уақытша мәндер; шақырушы қажет мәндерін өзі сақтайды.</dd>
-            <dt>$s0–$s7</dt>
-            <dd>
-              Сақталатын мәндер. Бұл — шақыру келісімі; процессор автоматты
-              түрде сақтамайды.
-            </dd>
-            <dt>$v0 / $a0</dt>
-            <dd>Нәтиже / аргумент; MARS syscall қызметтері де қолданады.</dd>
-          </dl>
+      <div className="register-lesson panel">
+        <div className="register-roles">
+          <h3>Регистрді таны.</h3>
+          <div className="role-tabs">
+            {roles.map((r, i) => (
+              <button
+                className={i === role ? "active" : ""}
+                key={r.name}
+                onClick={() => setRole(i)}
+              >
+                {r.name}
+              </button>
+            ))}
+          </div>
+          <p key={role}>{roles[role].text}</p>
+          <details className="concept-details">
+            <summary>Ядро, жиілік және архитектура</summary>
+            <p>
+              Ядро командаларды орындайды. Жиілік секундтағы такт санын
+              көрсетеді, бірақ жалғыз өзі өнімділікті анықтамайды. ISA —
+              командалардың келісімі, микроархитектура — сол келісімді іске
+              асыру тәсілі. Бұл сайт қарапайым оқу моделін көрсетеді.
+            </p>
+          </details>
         </div>
         <div className="number-system">
-          <span className="eyebrow">САН ӨЗГЕРМЕЙДІ. ЖАЗЫЛУЫ ӨЗГЕРЕДІ.</span>
+          <h3>Бір сан. Үш жазылу.</h3>
           <label>
             Бүтін сан
             <IntegerInput
@@ -189,29 +204,19 @@ export function Basics() {
           <div className="base-switch">
             {(["DEC", "HEX", "BIN"] as const).map((b) => (
               <button
-                key={b}
                 className={base === b ? "active" : ""}
+                key={b}
                 onClick={() => setBase(b)}
               >
                 {b}
               </button>
             ))}
           </div>
-          <output className="number-output mono">{format(value, base)}</output>
-          <small>
-            HEX және BIN таңбалы санның екілік толықтауыштағы 32 битін
-            көрсетеді.
-          </small>
+          <output className="number-output mono" key={`${base}-${value}`}>
+            {format(value, base)}
+          </output>
+          <p>Жазылуы өзгереді. Сан өзгермейді.</p>
         </div>
-      </div>
-      <div className="callout">
-        <strong>Біздің модель және нақты процессор</strong>
-        <p>
-          Ядро — командалар ағынын орындайтын есептеу бөлігі. Тактілік жиілік —
-          секундтағы такт саны; ол өздігінен өнімділікті анықтамайды. ISA —
-          бағдарламашы көретін келісім, микроархитектура — оны іске асыру
-          тәсілі. Бір ISA әртүрлі микроархитектураларда орындала алады.
-        </p>
       </div>
     </>
   );

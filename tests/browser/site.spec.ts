@@ -1,6 +1,11 @@
-import { test, expect } from "@playwright/test";
+import { test, expect, type Locator } from "@playwright/test";
 import { unzipSync, strFromU8 } from "fflate";
 import { readFile } from "node:fs/promises";
+async function openInspector(lab: Locator) {
+  const inspector = lab.locator(".lab-inspector");
+  if (!(await inspector.evaluate((el) => (el as HTMLDetailsElement).open)))
+    await inspector.locator(":scope > summary").click();
+}
 test("Оқу жолы, процессор, командалар, пайплайн және сан жүйелері", async ({
   page,
 }) => {
@@ -27,9 +32,11 @@ test("Оқу жолы, процессор, командалар, пайплай�
   await structure
     .getByRole("button", { name: "42 мәнін ALU-ға жеткізу" })
     .click();
-  await expect(structure.locator(".memory-section")).toContainText(
-    "RAM → кэш → регистр → ALU: 42",
+  await expect(structure.locator(".memory-status")).toHaveText(
+    "✓ 42 мәні ALU-ға жетті",
   );
+  await expect(structure.locator(".memory-node.visited")).toHaveCount(4);
+  await expect(structure.locator(".memory-alu code")).toHaveText("42");
   await page
     .locator("nav")
     .getByRole("link", { name: "Бір команда", exact: true })
@@ -63,6 +70,8 @@ test("Оқу жолы, процессор, командалар, пайплай�
   await page
     .getByRole("button", { name: "Тәуелділік + stall", exact: true })
     .click();
+  await page.locator(".pipeline-timeline > summary").click();
+  await expect(page.locator(".pipeline-table")).toBeVisible();
   await expect(
     page.locator(".pipeline-table td").filter({ hasText: "STALL" }),
   ).toHaveCount(4);
@@ -93,6 +102,7 @@ test("Бес есеп, кері қадам, өңдеу, көшіру және ж
   await page.goto("/#lab");
   const lab = page.locator("#lab");
   await lab.getByRole("button", { name: "Нәтижеге өту" }).click();
+  await openInspector(lab);
   await expect(lab.locator(".console")).toContainText("Max: 12");
   const negative = lab.getByLabel("Зертхана a", { exact: true });
   await negative.fill("");
@@ -101,7 +111,9 @@ test("Бес есеп, кері қадам, өңдеу, көшіру және ж
   await expect(lab.locator(".console")).toContainText("Нәтиже күтілуде");
   await negative.fill("7");
   await lab.getByRole("button", { name: "Нәтижеге өту" }).click();
-  await expect(lab.locator(".result-grid")).toContainText("Ең кішісі5");
+  await expect(
+    lab.locator(".result-grid > span").filter({ hasText: "Ең кішісі" }),
+  ).toContainText("5");
   await lab.getByRole("button", { name: "Алдыңғы қадам", exact: true }).click();
   await expect(lab.locator(".lab-now")).not.toContainText(
     "Бағдарлама аяқталды",
@@ -119,10 +131,12 @@ test("Бес есеп, кері қадам, өңдеу, көшіру және ж
     await lab.getByRole("tab", { name: new RegExp(tab) }).click();
     await lab.locator(".lab-inputs input").fill(input);
     await lab.getByRole("button", { name: "Нәтижеге өту" }).click();
+    await openInspector(lab);
     await expect(lab.locator(".console pre")).toContainText(expected);
   }
   await lab.getByRole("tab", { name: /Калькулятор/ }).click();
   await lab.getByRole("button", { name: "Нәтижеге өту" }).click();
+  await openInspector(lab);
   await expect(lab.locator(".console")).toContainText("Remainder: 3");
   await lab.getByRole("button", { name: "Кодты көшіру", exact: true }).click();
   await expect(lab.getByRole("status")).toContainText("Код көшірілді");
@@ -203,6 +217,9 @@ test("Ойнату, кідірту, жылдамдық, ASM ашу және то
   await cpu.getByRole("button", { name: "lw Жадтан оқу" }).click();
   await cpu.getByRole("button", { name: "WB Жазу" }).click();
   await expect(cpu.locator(".now")).toContainText("$t2 ← 42");
+  await cpu.getByLabel("Команда жад мәні").fill("-17");
+  await cpu.getByRole("button", { name: "WB Жазу" }).click();
+  await expect(cpu.locator(".now")).toContainText("$t2 ← -17");
   await page
     .locator("nav")
     .getByRole("link", { name: "Құрылым", exact: true })
@@ -218,6 +235,7 @@ test("Ойнату, кідірту, жылдамдық, ASM ашу және то
     .getByRole("link", { name: "Зертхана", exact: true })
     .click();
   const lab = page.locator("#lab");
+  await openInspector(lab);
   await lab.locator("input[type=file]").setInputFiles({
     name: "custom.asm",
     mimeType: "text/plain",

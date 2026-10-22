@@ -1,0 +1,1489 @@
+/* Standalone task scenes: visible results always come from the interpreter. */
+.lab-visual.viz-scene {
+  --scene-lime: #d2ff5a;
+  --scene-mint: #81f4c1;
+  --scene-orange: #ffb879;
+  --scene-ink: #0e1514;
+  position: relative;
+  isolation: isolate;
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  padding: 0;
+  color: #f3f6ed;
+  font-size: 18px;
+  overflow: hidden;
+  border-radius: 24px;
+  background: radial-gradient(ellipse at 50% 0%, #c5ff6b08, transparent 65%);
+}
+.viz-scene button {
+  font-size: 16px;
+  min-height: 46px;
+  border-radius: 13px;
+  padding: 10px 15px;
+  font-weight: 600;
+}
+.viz-scene .quick-values {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 9px;
+  margin: 24px 0 0;
+  padding: 0 2px 2px;
+}
+.viz-scene .quick-values button {
+  flex: 0 0 auto;
+  background: #1b2522;
+  border: 1px solid #ffffff13;
+  color: #cbd6ce;
+  box-shadow: none;
+}
+.viz-scene .quick-values button:hover {
+  border-color: #d2ff5a99;
+  background: #29361f;
+  color: #e4ffb4;
+  transform: translateY(-3px);
+}
+.viz-scene .quick-values button.selected {
+  border-color: #d2ff5a70;
+  background: #d2ff5a17;
+  color: var(--scene-lime);
+}
+.viz-scene .result-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin: 22px 0 0;
+}
+.viz-scene .result-grid > span {
+  border: 1px solid #ffffff0e;
+  border-radius: 17px;
+  padding: 18px 20px;
+  background: #ffffff04;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  font-size: 15px;
+  color: #b4c3b8;
+  min-width: 0;
+}
+.viz-scene .result-grid strong {
+  font:
+    600 34px/1.2 "Manrope Variable",
+    sans-serif;
+  letter-spacing: -1px;
+  color: var(--scene-lime);
+  overflow-wrap: anywhere;
+}
+.viz-scene .result-grid .word-result,
+.viz-scene .result-grid .smaller {
+  font-family: "Manrope Variable", sans-serif;
+  font-size: 20px;
+  letter-spacing: -0.4px;
+}
+.viz-scene .scene-prompt,
+.viz-scene .scene-notice {
+  font-size: 16px;
+  line-height: 1.6;
+  color: #a7b7aa;
+  text-align: center;
+  margin: 18px 0 0;
+  padding: 0 10px;
+}
+.viz-scene .scene-notice {
+  color: var(--scene-orange);
+}
+.result-burst {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+  z-index: -1;
+}
+.result-burst i {
+  position: absolute;
+  width: 5px;
+  height: 12px;
+  border-radius: 4px;
+  background: var(--scene-lime);
+  transform: rotate(var(--burst-angle));
+  animation: result-spark 1.1s cubic-bezier(0.1, 0.7, 0.2, 1) both;
+  opacity: 0;
+}
+.result-burst i:nth-child(3n) {
+  background: var(--scene-mint);
+}
+.result-burst i:nth-child(3n + 1) {
+  background: var(--scene-orange);
+}
+@keyframes result-spark {
+  0% {
+    opacity: 0;
+    transform: rotate(var(--burst-angle)) translateY(-25px) scale(0.3);
+  }
+  30% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: rotate(var(--burst-angle))
+      translateY(calc(var(--burst-distance) * -1)) scale(0.6);
+  }
+}
+/* Comparison: the line is zero, with negative columns extending downward. */
+.comparison-scene .pillar-stage {
+  position: relative;
+  min-height: 340px;
+  background: radial-gradient(ellipse at 50% 50%, #97c75812, transparent 70%);
+  padding: 0 24px;
+}
+.comparison-scene .pillar-grid {
+  position: absolute;
+  inset: 62px 15px 28px;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent 0,
+    transparent 53px,
+    #94af8720 54px,
+    transparent 55px
+  );
+  mask-image: linear-gradient(
+    90deg,
+    transparent,
+    #000 15%,
+    #000 85%,
+    transparent
+  );
+}
+.comparison-scene .pillar-zero {
+  position: absolute;
+  left: 24px;
+  right: 24px;
+  top: 206px;
+  height: 1px;
+  background: linear-gradient(90deg, #9dbd7420, #bbd99b80, #9dbd7420);
+  z-index: 2;
+}
+.comparison-scene .pillar-zero > span {
+  position: absolute;
+  left: -18px;
+  top: -10px;
+  font:
+    14px/1.4 "IBM Plex Mono",
+    monospace;
+  color: #a3b49b;
+}
+.comparison-scene .number-bars {
+  display: flex;
+  justify-content: center;
+  gap: 28px;
+  position: relative;
+  padding: 0;
+  min-height: 340px;
+}
+.comparison-scene .bar-column {
+  width: 25%;
+  max-width: 140px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 0;
+}
+.comparison-scene .pillar-value {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+  height: 72px;
+  justify-content: center;
+  position: relative;
+  z-index: 3;
+}
+.comparison-scene .pillar-value > b {
+  font:
+    650 clamp(24px, 4vw, 38px)/1.3 "Manrope Variable",
+    sans-serif;
+  color: #edf5e5;
+  letter-spacing: -1px;
+  overflow-wrap: anywhere;
+  max-width: 100%;
+}
+.comparison-scene .pillar-value > span {
+  font:
+    16px/1.5 "IBM Plex Mono",
+    monospace;
+  color: #a8b99e;
+}
+.comparison-scene .bar-scale {
+  width: 100%;
+  height: 268px;
+  position: relative;
+  margin: 0;
+  border: 0;
+  perspective: 400px;
+}
+.comparison-scene .bar-scale:after {
+  display: none;
+}
+.comparison-scene .number-bar {
+  width: 100%;
+  position: absolute;
+  border-radius: 12px 12px 3px 3px;
+  background: linear-gradient(100deg, #a7d95a 0%, #d2ff5a 50%, #8fc846 100%);
+  box-shadow:
+    inset 1px 0 0 #ecffc359,
+    inset -2px 0 0 #31521b70,
+    0 0 35px #c5ff6b12;
+  transition:
+    height 0.75s cubic-bezier(0.2, 0.8, 0.2, 1),
+    filter 0.3s;
+  overflow: visible;
+  transform-origin: bottom;
+}
+.comparison-scene .number-bar:before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 9px;
+  border-radius: 50%;
+  background: #ecffb8;
+  border: 1px solid #eaffb8;
+  transform: translateY(-30%);
+  box-shadow: 0 0 18px #d2ff5a55;
+}
+.comparison-scene .number-bar:after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(
+    100deg,
+    transparent 10%,
+    #fff4 45%,
+    transparent 80%
+  );
+  opacity: 0.6;
+}
+.comparison-scene .number-bar.negative {
+  background: linear-gradient(100deg, #3d9c98, #81f4c1, #428c88);
+  border-radius: 3px 3px 12px 12px;
+  transform-origin: top;
+  box-shadow: 0 0 35px #81f4c112;
+}
+.comparison-scene .number-bar.negative:before {
+  top: auto;
+  bottom: -3px;
+  background: #a3ffe0;
+  border-color: #a3ffe0;
+}
+.comparison-scene .number-bar > i {
+  position: absolute;
+  left: 12%;
+  right: 12%;
+  height: 1px;
+  background: #f1ffd43b;
+  top: 30%;
+}
+.comparison-scene .number-bar > i:nth-child(2) {
+  top: 55%;
+}
+.comparison-scene .number-bar > i:nth-child(3) {
+  top: 80%;
+}
+.comparison-scene .bar-column.comparing .number-bar {
+  filter: brightness(1.3);
+  box-shadow: 0 0 30px #d2ff5a35;
+}
+.comparison-scene .pillar-crown {
+  position: absolute;
+  top: 108px;
+  left: 50%;
+  transform: translate(-50%, -100%);
+  font-size: 14px;
+  white-space: nowrap;
+  padding: 5px 12px;
+  border-radius: 99px;
+  background: #d2ff5a;
+  color: #1a2710;
+  z-index: 4;
+  animation: verdict-in 0.6s both;
+}
+.comparison-scene .is-maximum .pillar-value > b {
+  color: var(--scene-lime);
+}
+.comparison-scene .comparison-results {
+  animation: verdict-in 0.65s both;
+}
+.comparison-pulse {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  min-height: 58px;
+  padding: 13px 17px;
+  border-radius: 16px;
+  background: #b9e9890b;
+  border: 1px solid #b9e98920;
+  font-size: 17px;
+  color: #dfedcf;
+  margin: 15px 0 0;
+}
+.comparison-pulse .pulse-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--scene-lime);
+  flex-shrink: 0;
+}
+.comparison-pulse b {
+  font-size: 14px;
+  margin-left: auto;
+  padding: 4px 9px;
+  border-radius: 8px;
+  background: #d2ff5a13;
+  color: var(--scene-lime);
+}
+.comparison-pulse.no b {
+  color: var(--scene-orange);
+  background: #ffb87911;
+}
+.comparison-pulse.idle {
+  font-size: 15px;
+  color: #a3b698;
+}
+/* Grade: an instrument dial and a large animated verdict. */
+.grade-scene .grade-arena {
+  width: 340px;
+  height: 340px;
+  max-width: 100%;
+  margin: 0 auto;
+  position: relative;
+  display: grid;
+  place-items: center;
+  background: radial-gradient(circle, #b9ef6520 0%, transparent 66%);
+}
+.grade-scene .grade-orbit {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+.grade-scene .orbit-guide {
+  fill: none;
+  stroke: #66854b30;
+  stroke-width: 2;
+}
+.grade-scene .orbit-guide.inner {
+  stroke-dasharray: 2 10;
+  stroke-width: 1;
+  transform-origin: 50% 50%;
+  animation: grade-ring-turn 36s linear infinite;
+}
+.grade-scene .orbit-progress {
+  fill: none;
+  stroke-width: 8;
+  stroke-linecap: round;
+  filter: drop-shadow(0 0 10px #d2ff5a38);
+  transition: stroke-dasharray 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.grade-scene .orbit-ticks line {
+  stroke: #86a46b66;
+  stroke-width: 1;
+}
+.grade-scene .grade-display {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0 24px;
+  text-align: center;
+  gap: 0;
+  max-width: 290px;
+}
+.grade-scene .grade-display > strong {
+  font:
+    600 158px/1 "Manrope Variable",
+    sans-serif;
+  letter-spacing: -8px;
+  color: var(--scene-lime);
+  text-shadow: 0 0 70px #baff4c24;
+  animation: grade-verdict 0.65s cubic-bezier(0.2, 0.9, 0.2, 1) both;
+}
+.grade-scene .grade-display > span {
+  font-size: 14px;
+  color: #b6c6a9;
+  line-height: 1.5;
+  max-width: 215px;
+  margin-top: 8px;
+}
+.grade-scene .score-orbit-label {
+  position: absolute;
+  bottom: 13px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #182319;
+  border: 1px solid #7d9e4d44;
+  border-radius: 99px;
+  padding: 6px 15px;
+  font:
+    600 18px/1.5 "Manrope Variable",
+    sans-serif;
+  color: #e0f1ca;
+  white-space: nowrap;
+}
+.grade-scene .score-orbit-label > span {
+  font-size: 14px;
+  color: #94aa80;
+  margin-left: 6px;
+}
+.grade-scene .grade-scale {
+  margin: 25px 8px 0;
+}
+.grade-scene .grade-meter {
+  position: relative;
+  overflow: visible;
+  height: 12px;
+  background: #263122;
+  border-radius: 999px;
+  margin: 0 0 15px;
+}
+.grade-scene .grade-meter > i {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #5f9b7b, #b5e77c, #d2ff5a);
+  transition: width 0.7s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.grade-scene .grade-marker {
+  position: absolute;
+  top: -5px;
+  width: 5px;
+  height: 22px;
+  border: 2px solid #f5ffe4;
+  background: #152011;
+  border-radius: 9px;
+  transform: translateX(-50%);
+  box-shadow: 0 0 15px #d2ff5a45;
+  transition: left 0.7s;
+}
+.grade-scene .meter-labels {
+  display: flex;
+  justify-content: space-between;
+  gap: 6px;
+  color: #94a28b;
+  font:
+    14px/1.7 "Manrope Variable",
+    sans-serif;
+}
+.grade-scene .meter-labels > span {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+  padding: 8px 0;
+  border-radius: 10px;
+  white-space: nowrap;
+}
+.grade-scene .meter-labels b {
+  font-size: 22px;
+  color: #b9c8ad;
+  font-weight: 600;
+}
+.grade-scene .meter-labels .selected {
+  background: #d2ff5a10;
+  color: #cde7ae;
+}
+.grade-scene .meter-labels .selected b {
+  color: var(--scene-lime);
+}
+.grade-scene.is-error .grade-display > strong {
+  color: var(--scene-orange);
+  text-shadow: 0 0 80px #ffb87925;
+}
+.grade-scene.is-error .orbit-progress {
+  stroke: var(--scene-orange);
+}
+@keyframes grade-ring-turn {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes grade-verdict {
+  0% {
+    opacity: 0;
+    transform: translateY(18px) scale(0.7);
+    filter: blur(12px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+  }
+}
+/* Function: the three branches remain separate, including the discontinuities. */
+.function-scene .formula-switch {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin: 0 0 20px;
+}
+.function-scene .formula-switch > div {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 13px 8px;
+  border: 1px solid #ffffff0b;
+  background: #ffffff03;
+  border-radius: 15px;
+  gap: 4px;
+  transition:
+    border-color 0.35s,
+    background 0.35s;
+}
+.function-scene .formula-switch span {
+  font-size: 14px;
+  color: #9bb18f;
+  white-space: nowrap;
+}
+.function-scene .formula-switch strong {
+  font:
+    600 21px/1.4 "Manrope Variable",
+    sans-serif;
+  color: #bacdaf;
+  letter-spacing: -0.5px;
+  white-space: nowrap;
+}
+.function-scene .formula-switch .selected {
+  border-color: #d2ff5a66;
+  background: #d2ff5a11;
+  box-shadow: 0 8px 24px #0002;
+}
+.function-scene .formula-switch .selected strong {
+  color: var(--scene-lime);
+}
+.function-scene .function-plot {
+  padding: 0 2px;
+  border-radius: 22px;
+  background:
+    radial-gradient(ellipse at 50% 70%, #b8ef7410, transparent 70%), #0b1210;
+  box-shadow: inset 0 0 0 1px #a1be8d0c;
+  overflow: hidden;
+}
+.function-scene .function-chart {
+  display: block;
+  width: 100%;
+  max-height: none;
+  overflow: visible;
+}
+.function-scene .chart-grid line {
+  stroke: #67885520;
+  stroke-width: 1;
+}
+.function-scene .chart-grid text {
+  font:
+    14px "IBM Plex Mono",
+    monospace;
+  fill: #a9b49f;
+}
+.function-scene .axis {
+  stroke: #8ca57580;
+  stroke-width: 1.2;
+}
+.function-scene .curve {
+  stroke-width: 3;
+  fill: none;
+  stroke-linecap: round;
+  opacity: 0.45;
+  transition:
+    opacity 0.4s,
+    stroke-width 0.4s,
+    filter 0.4s;
+  stroke-dasharray: none;
+  animation: curve-arrive 0.9s ease-out both;
+}
+.function-scene .curve.selected {
+  stroke-width: 5;
+  opacity: 1;
+  filter: drop-shadow(0 0 9px #d2ff5a30);
+}
+.function-scene .boundary-point {
+  stroke: #d2ff5a;
+  stroke-width: 2;
+}
+.function-scene .boundary-point.closed {
+  fill: #d2ff5a;
+}
+.function-scene .boundary-point.open {
+  fill: #0b1210;
+}
+.function-scene .point-projection {
+  stroke: #ffb8796b;
+  stroke-width: 1.5;
+  stroke-dasharray: 4 7;
+}
+.function-scene .point-core {
+  fill: var(--scene-orange);
+  filter: drop-shadow(0 0 8px #ffb87980);
+}
+.function-scene .point-ring {
+  fill: #ffb87912;
+  stroke: var(--scene-orange);
+  stroke-width: 1.5;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: graph-point-arrive 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+.function-scene .function-verdict {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+  min-height: 72px;
+  margin: 18px 0 0;
+  font-size: 17px;
+  color: #afc09f;
+  flex-wrap: wrap;
+}
+.function-scene .function-verdict > strong {
+  font:
+    650 clamp(25px, 4vw, 38px)/1.3 "Manrope Variable",
+    sans-serif;
+  letter-spacing: -1.2px;
+  color: var(--scene-lime);
+  overflow-wrap: anywhere;
+  animation: verdict-in 0.5s both;
+}
+.function-scene .function-verdict > span {
+  font-size: 18px;
+  color: #b1c39f;
+}
+.function-scene .function-verdict > span:only-child {
+  font-size: 17px;
+  text-align: center;
+  width: 100%;
+}
+@keyframes graph-point-arrive {
+  0% {
+    opacity: 0;
+    transform: scale(3);
+  }
+  60% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+@keyframes curve-arrive {
+  from {
+    opacity: 0.1;
+    transform: translateY(6px);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+/* Season: the landscape changes only after the MIPS branch selects a season. */
+.seasons-scene .season-landscape {
+  height: 300px;
+  position: relative;
+  overflow: hidden;
+  border-radius: 22px;
+  background: linear-gradient(180deg, #121d24, #243a36);
+  isolation: isolate;
+  border: 1px solid #ffffff0b;
+}
+.seasons-scene .season-aura {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at 70% 25%, #94e0d71c, transparent 65%);
+  animation: season-scene-in 0.9s ease both;
+}
+.seasons-scene .season-caption {
+  position: absolute;
+  left: 28px;
+  top: 25px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  z-index: 3;
+}
+.seasons-scene .season-caption > span {
+  font-size: 16px;
+  color: #d2e2d0aa;
+}
+.seasons-scene .season-caption > strong {
+  font:
+    600 clamp(30px, 5vw, 46px)/1.3 "Manrope Variable",
+    sans-serif;
+  letter-spacing: -1.5px;
+  color: #edf4e8;
+}
+.seasons-scene .season-sun {
+  position: absolute;
+  width: 74px;
+  height: 74px;
+  border-radius: 50%;
+  left: 48%;
+  top: 44px;
+  background: #b0d2ba;
+  box-shadow:
+    0 0 70px #acc7a320,
+    0 0 0 15px #acc7a308;
+  transition: background 0.8s;
+}
+.seasons-scene .season-cloud {
+  position: absolute;
+  width: 100px;
+  height: 15px;
+  border-radius: 50%;
+  background: #d7ecdf20;
+  filter: blur(5px);
+  animation: cloud-drift 18s ease-in-out infinite alternate;
+}
+.seasons-scene .cloud-one {
+  left: 18%;
+  top: 112px;
+}
+.seasons-scene .cloud-two {
+  left: 64%;
+  top: 99px;
+  width: 130px;
+  animation-delay: -8s;
+}
+.seasons-scene .landscape-art {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+.seasons-scene .far-hill {
+  fill: #355345;
+}
+.seasons-scene .near-hill {
+  fill: #1c3728;
+}
+.seasons-scene .ground-path {
+  fill: none;
+  stroke: #b1ce8a2b;
+  stroke-width: 18;
+  stroke-linecap: round;
+}
+.seasons-scene .tree-trunk {
+  fill: none;
+  stroke: #826e4b;
+  stroke-width: 10;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.seasons-scene .tree-canopy {
+  fill: #709d5e;
+}
+.seasons-scene .tree-canopy circle:nth-child(2) {
+  fill: #567c49;
+}
+.seasons-scene .tree-canopy circle:nth-child(3) {
+  fill: #82ae68;
+}
+.seasons-scene .tree-snow {
+  display: none;
+}
+.seasons-scene .ground-flower {
+  opacity: 0;
+}
+.seasons-scene .ground-flower path {
+  stroke: #68985a;
+  stroke-width: 2;
+  fill: none;
+}
+.seasons-scene .ground-flower circle {
+  fill: #ecb7c9;
+}
+.seasons-scene .season-particles {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 4;
+}
+.seasons-scene .season-particles > i {
+  position: absolute;
+  left: var(--particle-x);
+  top: -20px;
+  width: var(--particle-size);
+  height: var(--particle-size);
+  animation: season-fall var(--particle-time) linear infinite;
+  animation-delay: var(--particle-delay);
+}
+.seasons-scene.season-1 .season-landscape {
+  background: linear-gradient(180deg, #10202b, #304e5b);
+}
+.seasons-scene.season-1 .season-sun {
+  background: #d5e6e4;
+  box-shadow: 0 0 60px #e0f2eb1c;
+}
+.seasons-scene.season-1 .far-hill {
+  fill: #698c9b;
+}
+.seasons-scene.season-1 .near-hill {
+  fill: #b9d1d4;
+}
+.seasons-scene.season-1 .tree-canopy {
+  fill: #2b5b60;
+}
+.seasons-scene.season-1 .tree-canopy circle:nth-child(2) {
+  fill: #2e535d;
+}
+.seasons-scene.season-1 .tree-canopy circle:nth-child(3) {
+  fill: #386b70;
+}
+.seasons-scene.season-1 .tree-snow {
+  display: block;
+  fill: #e4f4f0;
+}
+.seasons-scene.season-1 .season-particles > i {
+  border-radius: 50%;
+  background: #e4f4f0;
+  box-shadow: 0 0 5px #e4f4f080;
+}
+.seasons-scene.season-2 .season-landscape {
+  background: linear-gradient(180deg, #183332, #406a55);
+}
+.seasons-scene.season-2 .season-sun {
+  background: #e4edb4;
+  box-shadow: 0 0 70px #f7f8b924;
+}
+.seasons-scene.season-2 .tree-canopy {
+  fill: #eab4c6;
+}
+.seasons-scene.season-2 .tree-canopy circle:nth-child(2) {
+  fill: #d79bb1;
+}
+.seasons-scene.season-2 .tree-canopy circle:nth-child(3) {
+  fill: #f7c7d4;
+}
+.seasons-scene.season-2 .near-hill {
+  fill: #446b3d;
+}
+.seasons-scene.season-2 .ground-flower {
+  opacity: 1;
+}
+.seasons-scene.season-2 .season-particles > i {
+  border-radius: 90% 10% 90% 10%;
+  background: #eeb1c5;
+  opacity: 0.8;
+}
+.seasons-scene.season-3 .season-landscape {
+  background: linear-gradient(180deg, #183234, #3e6c5f);
+}
+.seasons-scene.season-3 .season-sun {
+  background: #ffe590;
+  box-shadow:
+    0 0 0 15px #ffe5900d,
+    0 0 80px #ffe59045;
+}
+.seasons-scene.season-3 .tree-canopy {
+  fill: #6aab45;
+}
+.seasons-scene.season-3 .tree-canopy circle:nth-child(2) {
+  fill: #45873e;
+}
+.seasons-scene.season-3 .tree-canopy circle:nth-child(3) {
+  fill: #90bf4a;
+}
+.seasons-scene.season-3 .near-hill {
+  fill: #32562c;
+}
+.seasons-scene.season-3 .season-particles > i {
+  background: #eefcad;
+  box-shadow: 0 0 12px #fff2ab;
+  border-radius: 50%;
+  animation-name: summer-firefly;
+  opacity: 0.8;
+}
+.seasons-scene.season-4 .season-landscape {
+  background: linear-gradient(180deg, #292226, #664c3c);
+}
+.seasons-scene.season-4 .season-sun {
+  background: #ffcd98;
+  box-shadow: 0 0 80px #ffc89b25;
+}
+.seasons-scene.season-4 .far-hill {
+  fill: #71533a;
+}
+.seasons-scene.season-4 .near-hill {
+  fill: #503c2b;
+}
+.seasons-scene.season-4 .tree-canopy {
+  fill: #db8a3d;
+}
+.seasons-scene.season-4 .tree-canopy circle:nth-child(2) {
+  fill: #a85e31;
+}
+.seasons-scene.season-4 .tree-canopy circle:nth-child(3) {
+  fill: #efac50;
+}
+.seasons-scene.season-4 .season-particles > i {
+  border-radius: 80% 15% 80% 15%;
+  background: #f3a755;
+  opacity: 0.9;
+}
+.seasons-scene .month-wheel {
+  position: relative;
+  width: 320px;
+  height: 320px;
+  max-width: 100%;
+  margin: 24px auto 0;
+  border: 1px solid #b7db991f;
+  border-radius: 50%;
+  background: radial-gradient(circle, #9fcb6b09, transparent 65%);
+}
+.seasons-scene .month-wheel:before {
+  content: "";
+  position: absolute;
+  inset: 46px;
+  border: 1px dashed #9fbf8330;
+  border-radius: 50%;
+  pointer-events: none;
+}
+.seasons-scene .month-wheel > button {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  padding: 0;
+  width: 45px;
+  height: 45px;
+  min-height: 45px;
+  border-radius: 50%;
+  font:
+    500 17px/1 "IBM Plex Mono",
+    monospace;
+  color: #bbcbb0;
+  background: #17211b;
+  border: 1px solid #6e875333;
+  z-index: 2;
+  transition:
+    background 0.3s,
+    border-color 0.3s,
+    color 0.3s,
+    box-shadow 0.3s;
+}
+.seasons-scene .month-wheel > button:hover {
+  border-color: var(--scene-lime);
+  color: #edf8e3;
+}
+.seasons-scene .month-wheel > button.active {
+  background: var(--scene-lime);
+  color: #17210d;
+  border-color: var(--scene-lime);
+  box-shadow: 0 0 35px #d2ff5a20;
+}
+.seasons-scene .season-center {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  gap: 8px;
+  pointer-events: none;
+  width: 170px;
+}
+.seasons-scene .season-center .season-icon {
+  font:
+    58px/1.2 "Manrope Variable",
+    sans-serif;
+  color: var(--scene-lime);
+  animation: none;
+}
+.seasons-scene .season-center strong {
+  font:
+    600 23px/1.4 "Manrope Variable",
+    sans-serif;
+  color: #e5efdf;
+  letter-spacing: -0.5px;
+}
+.seasons-scene.season-1 .season-icon {
+  color: #c5edf4;
+}
+.seasons-scene.season-2 .season-icon {
+  color: #f6bed3;
+}
+.seasons-scene.season-3 .season-icon {
+  color: #ffe590;
+}
+.seasons-scene.season-4 .season-icon {
+  color: #f3ac67;
+}
+@keyframes season-fall {
+  0% {
+    transform: translate(0, -20px) rotate(0deg);
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.8;
+  }
+  90% {
+    opacity: 0.8;
+  }
+  100% {
+    transform: translate(35px, 340px) rotate(180deg);
+    opacity: 0;
+  }
+}
+@keyframes summer-firefly {
+  0% {
+    transform: translate(0, 250px);
+    opacity: 0;
+  }
+  25% {
+    opacity: 0.8;
+  }
+  100% {
+    transform: translate(35px, 40px);
+    opacity: 0;
+  }
+}
+@keyframes cloud-drift {
+  to {
+    transform: translateX(35px);
+  }
+}
+@keyframes season-scene-in {
+  from {
+    opacity: 0;
+    transform: scale(1.05);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+/* Calculator: a real computed answer becomes the center of the scene. */
+.calculator-scene {
+  padding: 34px 20px 28px !important;
+  min-height: 365px;
+  background:
+    radial-gradient(ellipse at 50% 45%, #b6f16d15, transparent 65%), #0d1512 !important;
+}
+.calculator-scene .calculator-orbit {
+  position: absolute;
+  width: 280px;
+  height: 280px;
+  border: 1px solid #a6cf6b1c;
+  border-radius: 50%;
+  left: 50%;
+  top: 87px;
+  transform: translateX(-50%);
+  pointer-events: none;
+  z-index: -1;
+  animation: calculator-orbit 22s linear infinite;
+}
+.calculator-scene .calculator-orbit:before {
+  content: "";
+  position: absolute;
+  inset: 19px;
+  border: 1px dashed #a6cf6b1a;
+  border-radius: 50%;
+}
+.calculator-scene .calculator-orbit > i {
+  position: absolute;
+  left: 50%;
+  top: -4px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--scene-lime);
+  box-shadow: 0 0 14px #d2ff5a5f;
+}
+.calculator-scene .calculator-orbit > i:nth-child(2) {
+  top: 72%;
+  left: 4%;
+  width: 4px;
+  height: 4px;
+  background: var(--scene-mint);
+}
+.calculator-scene .calculator-orbit > i:nth-child(3) {
+  top: 72%;
+  left: 93%;
+  width: 4px;
+  height: 4px;
+  background: var(--scene-orange);
+}
+.calculator-scene .calculator-equation {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 15px;
+  flex-wrap: wrap;
+  min-height: 0;
+  padding: 0;
+  font:
+    500 27px/1.3 "Manrope Variable",
+    sans-serif;
+  letter-spacing: -0.7px;
+  color: #c5d7b5;
+}
+.calculator-scene .calculator-equation > span {
+  padding: 8px 12px;
+  border-radius: 11px;
+  background: #c1ec8c08;
+  border: 1px solid #c1ec8c16;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+.calculator-scene .calculator-equation > b {
+  color: #93aa7c;
+  font-weight: 400;
+}
+.calculator-scene .calculator-answer {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 240px;
+  text-align: center;
+  padding: 27px 0;
+  isolation: isolate;
+}
+.calculator-scene .calculator-answer > span {
+  font-size: 15px;
+  color: #a8bf96;
+}
+.calculator-scene .calculator-answer > strong {
+  font:
+    600 clamp(52px, 10vw, 106px)/1.15 "Manrope Variable",
+    sans-serif;
+  letter-spacing: -5px;
+  color: var(--scene-lime);
+  text-shadow: 0 0 70px #d2ff5a1f;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  animation: answer-arrive 0.7s cubic-bezier(0.1, 0.85, 0.2, 1) both;
+}
+.calculator-scene .division-result {
+  margin-top: 0;
+}
+.calculator-scene .division-result > span {
+  background: #b2e77c08;
+  align-items: center;
+  padding: 17px;
+}
+.calculator-scene .division-result strong {
+  font-size: 32px;
+}
+.calculator-scene .calculator-error {
+  text-align: center;
+  color: var(--scene-orange);
+  font-size: 18px;
+  margin: 0;
+  padding: 0 15px;
+}
+.calculator-scene.is-error .calculator-answer > strong {
+  color: var(--scene-orange);
+  text-shadow: 0 0 80px #ffb87925;
+}
+.calculator-scene.is-error .calculator-orbit {
+  border-color: #ffb87933;
+}
+.calculator-scene.is-error .calculator-orbit > i {
+  background: var(--scene-orange);
+}
+.calculation-progress {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 5px;
+  color: #9fb58c;
+  font-size: 14px;
+}
+.calculation-progress > i {
+  width: 5px;
+  height: 5px;
+  background: var(--scene-lime);
+  border-radius: 50%;
+  animation: calculation-dot 1s ease-in-out infinite;
+}
+.calculation-progress > i:nth-child(2) {
+  animation-delay: 0.15s;
+}
+.calculation-progress > i:nth-child(3) {
+  animation-delay: 0.3s;
+}
+.calculation-progress > span {
+  margin-left: 8px;
+}
+@keyframes calculator-orbit {
+  to {
+    transform: translateX(-50%) rotate(360deg);
+  }
+}
+@keyframes answer-arrive {
+  0% {
+    opacity: 0;
+    transform: translateY(15px) scale(0.8);
+    filter: blur(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+  }
+}
+@keyframes calculation-dot {
+  50% {
+    opacity: 0.25;
+    transform: translateY(-4px);
+  }
+}
+@keyframes verdict-in {
+  from {
+    opacity: 0;
+    transform: translateY(13px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.seasons-scene {
+  container-type: inline-size;
+}
+@container (min-width:620px) {
+  .season-composition {
+    display: grid;
+    grid-template-columns: minmax(0, 1.25fr) minmax(285px, 0.8fr);
+    gap: 20px;
+    align-items: center;
+  }
+  .seasons-scene .season-landscape {
+    height: 340px;
+  }
+  .seasons-scene .month-wheel {
+    margin: 0 auto;
+    width: 300px;
+    height: 300px;
+  }
+}
+@media (max-width: 600px) {
+  .viz-scene .result-grid {
+    gap: 9px;
+  }
+  .viz-scene .result-grid > span {
+    font-size: 14px;
+    padding: 15px;
+  }
+  .viz-scene .result-grid strong {
+    font-size: 29px;
+  }
+  .viz-scene .result-grid .word-result,
+  .viz-scene .result-grid .smaller {
+    font-size: 18px;
+  }
+  .viz-scene .quick-values {
+    gap: 7px;
+    margin-top: 20px;
+  }
+  .viz-scene .quick-values button {
+    font-size: 15px;
+    min-height: 44px;
+    padding: 9px 12px;
+  }
+  .comparison-scene .pillar-stage {
+    padding: 0 20px;
+    min-height: 320px;
+  }
+  .comparison-scene .number-bars {
+    gap: 20px;
+    min-height: 320px;
+  }
+  .comparison-scene .bar-scale {
+    height: 248px;
+  }
+  .comparison-scene .pillar-zero {
+    top: 196px;
+  }
+  .comparison-scene .pillar-crown {
+    top: 98px;
+    font-size: 14px;
+    padding: 4px 9px;
+  }
+  .comparison-scene .pillar-value > b {
+    font-size: 27px;
+  }
+  .comparison-pulse {
+    font-size: 16px;
+    gap: 9px;
+    padding: 12px;
+  }
+  .grade-scene .grade-arena {
+    width: 310px;
+    height: 310px;
+  }
+  .grade-scene .grade-display > strong {
+    font-size: 136px;
+  }
+  .grade-scene .score-orbit-label {
+    bottom: 10px;
+  }
+  .grade-scene .grade-scale {
+    margin-top: 20px;
+  }
+  .grade-scene .meter-labels {
+    font-size: 14px;
+    gap: 2px;
+  }
+  .grade-scene .meter-labels b {
+    font-size: 20px;
+  }
+  .function-scene .formula-switch {
+    gap: 6px;
+  }
+  .function-scene .chart-grid text {
+    font-size: 24px;
+  }
+  .function-scene .formula-switch > div {
+    padding: 10px 4px;
+  }
+  .function-scene .formula-switch span {
+    font-size: 14px;
+  }
+  .function-scene .formula-switch strong {
+    font-size: 18px;
+  }
+  .function-scene .function-verdict {
+    margin-top: 15px;
+    min-height: 65px;
+    gap: 8px;
+  }
+  .function-scene .function-verdict > strong {
+    font-size: 29px;
+  }
+  .function-scene .function-verdict > span {
+    font-size: 16px;
+  }
+  .seasons-scene .season-landscape {
+    height: 270px;
+  }
+  .seasons-scene .season-caption {
+    left: 22px;
+    top: 22px;
+  }
+  .seasons-scene .season-caption > strong {
+    font-size: 34px;
+  }
+  .seasons-scene .month-wheel {
+    width: 290px;
+    height: 290px;
+  }
+  .seasons-scene .month-wheel > button {
+    width: 43px;
+    height: 43px;
+    min-height: 43px;
+    font-size: 16px;
+  }
+  .seasons-scene .season-center strong {
+    font-size: 22px;
+  }
+  .calculator-scene {
+    padding: 26px 15px 24px !important;
+  }
+  .calculator-scene .calculator-equation {
+    font-size: 23px;
+    gap: 10px;
+  }
+  .calculator-scene .calculator-answer > strong {
+    font-size: 76px;
+    letter-spacing: -3px;
+  }
+  .calculator-scene .calculator-answer {
+    min-height: 220px;
+  }
+  .calculator-scene .calculator-orbit {
+    top: 70px;
+    width: 260px;
+    height: 260px;
+  }
+}
+@media (max-width: 380px) {
+  .grade-scene .grade-arena {
+    width: 280px;
+    height: 280px;
+  }
+  .grade-scene .grade-display > strong {
+    font-size: 120px;
+  }
+  .grade-scene .grade-display > span {
+    font-size: 14px;
+    max-width: 180px;
+  }
+  .grade-scene .score-orbit-label {
+    font-size: 16px;
+    padding: 5px 11px;
+  }
+  .seasons-scene .month-wheel {
+    width: 260px;
+    height: 260px;
+  }
+  .seasons-scene .month-wheel > button {
+    width: 40px;
+    height: 40px;
+    min-height: 40px;
+    font-size: 15px;
+  }
+  .seasons-scene .season-center {
+    width: 140px;
+  }
+  .seasons-scene .season-center .season-icon {
+    font-size: 48px;
+  }
+  .function-scene .formula-switch strong {
+    font-size: 16px;
+  }
+  .function-scene .formula-switch span {
+    font-size: 14px;
+  }
+  .comparison-scene .number-bars {
+    gap: 16px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .viz-scene *,
+  .viz-scene *:before,
+  .viz-scene *:after {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+/* SVG text uses scene-width queries so it remains readable after SVG scaling. */
+.function-scene {
+  container-type: inline-size;
+}
+@container (max-width:420px) {
+  .function-scene .chart-grid text {
+    font-size: 23px;
+  }
+}
+@container (max-width:340px) {
+  .function-scene .chart-grid text {
+    font-size: 28px;
+  }
+}
+@container (max-width:290px) {
+  .function-scene .chart-grid text {
+    font-size: 33px;
+  }
+}
+@container (max-width:250px) {
+  .function-scene .chart-grid text {
+    font-size: 39px;
+  }
+}

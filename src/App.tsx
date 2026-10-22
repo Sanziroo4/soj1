@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, type CSSProperties } from "react";
 import {
   ArrowRight,
   ArrowUpRight,
@@ -11,7 +11,6 @@ import {
   ChevronRight,
   X,
   Download,
-  BookOpen,
   Play,
   Pause,
 } from "lucide-react";
@@ -57,14 +56,13 @@ function SectionHead({
   return (
     <div className="section-heading">
       <div>
-        <span className="eyebrow">
-          <span className="section-num">{n}</span>
-          {kicker}
-        </span>
+        <span className="eyebrow">{kicker}</span>
         <h2>{title}</h2>
         <p>{description}</p>
       </div>
-      <span className="section-cross">+</span>
+      <span className="section-index" aria-hidden="true">
+        {n}
+      </span>
     </div>
   );
 }
@@ -77,6 +75,16 @@ export default function App() {
     [labId, setLabId] = useState(1),
     [fullscreen, setFullscreen] = useState(false),
     [notice, setNotice] = useState("");
+  useEffect(() => {
+    const id = window.location.hash.slice(1);
+    if (!nav.some((n) => n.id === id)) return;
+    const frame = requestAnimationFrame(() =>
+      document
+        .getElementById(id)
+        ?.scrollIntoView({ behavior: "instant", block: "start" }),
+    );
+    return () => cancelAnimationFrame(frame);
+  }, []);
   useEffect(() => {
     let frame = 0;
     const update = () => {
@@ -165,12 +173,11 @@ export default function App() {
         Мазмұнға өту
       </a>
       <header className="site-header">
-        <a className="brand" href="#intro" onClick={() => setActive("intro")}>
+        <a className="brand" href="#intro" aria-label="MIPS LAB басты бет">
           <span className="brand-icon">
-            <Cpu size={20} />
+            <Cpu size={25} />
           </span>
-          MIPS<span className="brand-light">LAB</span>
-          <span className="brand-version">/ 01</span>
+          MIPS<span>LAB</span>
         </a>
         <nav aria-label="Бөлімдер">
           {nav.map((n) => (
@@ -191,7 +198,7 @@ export default function App() {
             move(0);
           }}
         >
-          <Maximize size={14} />
+          <Play size={17} />
           <span>Қорғау режимі</span>
         </button>
       </header>
@@ -199,134 +206,111 @@ export default function App() {
         <section id="intro" className="hero">
           <div className="hero-grid">
             <div className="hero-copy">
-              <span className="eyebrow hero-eyebrow">
-                <i className="status-dot" /> ҚАЗАҚША ИНТЕРАКТИВТІ ОҚУ ОРТАСЫ
+              <span className="hero-kicker">
+                <span />
+                Оқып қана қойма. Іске қос.
               </span>
               <h1>
-                Үлкен идеялар.
+                Кодты жаз.
                 <br />
-                Кішкентай{" "}
-                <span>
-                  чиптің
-                  <br className="desktop-break" /> ішінде.
-                </span>
+                <span>Процесті көр.</span>
               </h1>
               <p>
-                Процессор қалай ойлайды? Сандар қайда жүреді?
-                <br className="desktop-break" /> MIPS әлемін ішінен зерттеп, әр
-                команданың
-                <br className="desktop-break" /> шешімге қалай айналатынын өзің
-                көр.
+                Процессордың ішіне кір. Команданы жүргіз. Әр шешімнің қалай
+                пайда болатынын өзің зертте.
               </p>
               <div className="hero-actions">
-                <button className="primary large" onClick={reveal}>
-                  Процессордың ішіне саяхат <ArrowUpRight size={18} />
+                <button
+                  className="primary large"
+                  onClick={reveal}
+                  aria-label="Процессордың ішіне саяхат"
+                >
+                  Процессорды ашу <ArrowUpRight size={21} />
                 </button>
-                <button className="plain" onClick={() => go("lab")}>
-                  Зертханаға өту <ArrowRight size={16} />
+                <button
+                  className="plain large"
+                  onClick={() => go("lab")}
+                  aria-label="Зертханаға өту"
+                >
+                  Зертхана <ArrowRight size={21} />
                 </button>
               </div>
-              <div className="hero-meta">
+              <div className="hero-trail">
                 <span>
-                  <i />
-                  32 биттік оқу моделі
+                  <Cpu size={19} />
+                  Құрылымды аш
                 </span>
-                <span>5 практикалық тапсырма</span>
-                <span>Өз қарқыныңмен</span>
+                <i />
+                <span>
+                  <GitBranch size={19} />
+                  Кодты іске қос
+                </span>
+                <i />
+                <span>
+                  <Layers size={19} />
+                  Нәтижені көр
+                </span>
               </div>
             </div>
             <div className="hero-visual">
-              <span className="visual-coordinate">MIPS RISC ARCHITECTURE</span>
+              <div className="hero-aura" />
               <Chip onClick={reveal} />
-              <div className="visual-bottom">
-                <span>
-                  STATUS <b>READY TO EXPLORE</b>
-                </span>
-                <span>0x00400000</span>
-              </div>
             </div>
           </div>
-          <div className="hero-bottom">
-            <span>ТЕОРИЯДАН → ТӘЖІРИБЕГЕ</span>
-            <a href="#structure">
-              Төмен айналдырып зертте <span>↓</span>
-            </a>
-            <span className="mono">01 — 07</span>
-          </div>
+          <a className="scroll-cue" href="#structure">
+            <ArrowRight size={19} />
+            <span>Тәжірибені баста</span>
+          </a>
         </section>
-        <div className="learning-strip">
-          <span className="eyebrow">СЕНІҢ ОҚУ ЖОЛЫҢ</span>
-          <div>
-            {nav.map((n, i) => (
-              <a href={`#${n.id}`} key={n.id}>
-                <small>{n.n}</small>
-                {n.label}
-                {i < 6 && <ChevronRight size={13} />}
-              </a>
-            ))}
-          </div>
-        </div>
         <section className="content-section" id="structure">
           <SectionHead
-            n="02"
-            kicker="ПРОЦЕССОРДЫ ТАНЫ"
-            title="Сыртынан чип. Ішінде — тұтас жүйе."
-            description="Процессор — нұсқауларды орындайтын есептеу құрылғысы. Бөлікті таңдап, оның басқалармен қалай жұмыс істейтінін көр."
+            n="01"
+            kicker="Зертте"
+            title="Бір чип. Тұтас әлем."
+            description="Процессорды ашып, кез келген бөлігін таңда."
           />
           <Processor reveal={processorReveal} />
           <MemoryLesson />
-          <a className="next-link" href="#instruction">
-            Енді бір команданың жолын бақылайық <ArrowRight size={17} />
-          </a>
         </section>
         <section className="content-section" id="instruction">
           <SectionHead
-            n="03"
-            kicker="БІР КОМАНДАНЫҢ ЖОЛЫ"
-            title="7 + 5. Бірақ процессор үшін қалай?"
-            description="Команданы алу сәтінен нәтижені жазуға дейін. Әр кезеңді тоқтатып, нақты мәндерді зертте."
+            n="02"
+            kicker="Қозғалысты бақыла"
+            title="Бір команда. Толық саяхат."
+            description="Мәндерді өзгерт. Бастау батырмасын бас. Нәтижеге дейінгі әр сәтті көр."
           />
           <Instruction
             demo={defense && autoPresent && routes[route].id === "instruction"}
             onComplete={advance}
           />
-          <a className="next-link" href="#pipeline">
-            Ал бірнеше команда қатар орындалса ше? <ArrowRight size={17} />
-          </a>
         </section>
         <section className="content-section" id="pipeline">
           <SectionHead
-            n="04"
-            kicker="КЕЗЕҢДЕРДІ ҚАБАТТАСТЫРУ"
-            title="Бір ырғақ. Бірнеше команда."
-            description="Пайплайн әртүрлі командалардың кезеңдерін қабаттастырады. Бұл әр команданың өз нәтижесіне жететін жолын қысқартпайды."
+            n="03"
+            kicker="Бірге орында"
+            title="Бір ырғақпен. Қатар қозғалыс."
+            description="Командалар қалай қабаттасатынын және неге кейде күту керегін зертте."
           />
           <Pipeline
             demo={defense && autoPresent && routes[route].id === "pipeline"}
             onComplete={advance}
           />
-          <a className="next-link" href="#basics">
-            MIPS тілін түсінуге көшейік <ArrowRight size={17} />
-          </a>
         </section>
         <section className="content-section" id="basics">
           <SectionHead
-            n="05"
-            kicker="ЗЕРТХАНАҒА ДАЙЫНДЫҚ"
+            n="04"
+            kicker="Тілді түсін"
             title="Процессормен ортақ тіл тап."
-            description="Бірнеше негізгі ұғымды білсең, төмендегі ассемблер коды оқылатын нұсқаулыққа айналады."
+            description="Зертханаға керек негізгі ұғымдар — бір жерде."
           />
           <Basics />
-          <a className="next-link" href="#lab">
-            Түсінгеніңді бес тапсырмада сына <ArrowRight size={17} />
-          </a>
         </section>
         <section className="content-section lab-section" id="lab">
           <SectionHead
-            n="06"
-            kicker="ИНТЕРАКТИВТІ ЗЕРТХАНА"
+            n="05"
+            kicker="Өзің жасап көр"
             title="Шарттан шешімге."
-            description="Санды өзгерт. Кодты орында. Тармақтың неге таңдалғанын бақыла. Әр нәтиженің артында — орындалған MIPS командасы."
+            description="Бес тәжірибе. Сансыз мүмкіндік. Мәнді өзгерт те, кодтың шешімін бақыла."
           />
           <Lab
             selectedId={labId}
@@ -338,33 +322,19 @@ export default function App() {
             onComplete={advance}
           />
         </section>
-        <section className="content-section" id="defense">
-          <SectionHead
-            n="07"
-            kicker="СӨЖ ҚОРҒАУ"
-            title="Түсін. Көрсет. Түсіндір."
-            description="Дайын маршрут процессор құрылымынан бес практикалық тапсырмаға дейін жүргізеді. Әр аялдамада сөйлеушіге қысқа тірек мәтін бар."
-          />
-          <div className="panel defense-card">
-            <div>
-              <span className="eyebrow">СЕЙТҚАЗЫ С.Қ. · ӨЗІНДІК ЖҰМЫС</span>
-              <h3>
-                «MIPS ассемблерінде шартты операторларды пайдаланып, көп
-                деңгейлі тармақталуды жүзеге асыру»
-              </h3>
-              <div className="defense-features">
-                <span>
-                  <Cpu size={17} />
-                  Процессор құрылымы
-                </span>
-                <span>
-                  <Layers size={17} />
-                  Команданың жолы
-                </span>
-                <span>
-                  <GitBranch size={17} />5 тапсырма
-                </span>
-              </div>
+        <section className="content-section defense-section" id="defense">
+          <div className="defense-card panel">
+            <div className="defense-copy">
+              <span className="eyebrow">Көрсететін сәт келді</span>
+              <h2>
+                Өзің түсін.
+                <br />
+                <span>Өзгеге түсіндір.</span>
+              </h2>
+              <p>
+                Процессордан бес зертханаға дейінгі толық көрсетілім. Маршрут
+                өзі жүргізеді, түсіндіру — сенен.
+              </p>
               <div className="hero-actions">
                 <button
                   className="primary large"
@@ -374,74 +344,54 @@ export default function App() {
                     move(0, true);
                   }}
                 >
-                  Қорғау маршрутын бастау <ArrowRight size={17} />
+                  Қорғау маршрутын бастау <ArrowRight size={22} />
                 </button>
-                <button onClick={full}>
-                  <Maximize size={16} />
-                  Толық экран
+                <button
+                  className="icon-button"
+                  aria-label="Толық экран"
+                  onClick={full}
+                >
+                  <Maximize size={21} />
                 </button>
               </div>
             </div>
-            <div className="defense-art">
-              <span>IF</span>
-              <span>ID</span>
-              <span>EX</span>
-              <span>MEM</span>
-              <span>WB</span>
-              <GitBranch size={62} />
+            <div className="defense-art" aria-hidden="true">
+              <div className="defense-orbit" />
+              <div className="defense-symbol">
+                <GitBranch size={86} />
+              </div>
+              {["IF", "ID", "EX", "MEM", "WB"].map((s, i) => (
+                <span key={s} style={{ "--stage": i } as CSSProperties}>
+                  {s}
+                </span>
+              ))}
             </div>
-          </div>
-          <div className="resources">
-            <div>
-              <BookOpen size={20} />
-              <h3>Дереккөздер</h3>
+            <div className="defense-credit">
+              <strong>Сейтқазы С.Қ.</strong>
+              <p>
+                MIPS ассемблерінде шартты операторларды пайдаланып, көп деңгейлі
+                тармақталуды жүзеге асыру
+              </p>
             </div>
-            <a
-              href="https://dpetersanderson.github.io/"
-              target="_blank"
-              rel="noreferrer"
-            >
-              MARS жобасы <ArrowUpRight size={14} />
-            </a>
-            <a
-              href="https://dpetersanderson.github.io/Help/SyscallHelp.html"
-              target="_blank"
-              rel="noreferrer"
-            >
-              Syscall анықтамасы <ArrowUpRight size={14} />
-            </a>
-            <a
-              href="https://dpetersanderson.github.io/Help/MarsHelpSettings.html"
-              target="_blank"
-              rel="noreferrer"
-            >
-              MARS баптаулары <ArrowUpRight size={14} />
-            </a>
-            <a
-              href="https://ucsb-cs154.github.io/w20/lectures/lect13.pdf"
-              target="_blank"
-              rel="noreferrer"
-            >
-              Классикалық пайплайн <ArrowUpRight size={14} />
-            </a>
           </div>
         </section>
       </main>
       <footer>
         <a className="brand" href="#intro">
-          <Cpu size={20} /> MIPS LAB
+          <Cpu size={23} />
+          MIPS<span>LAB</span>
         </a>
-        <span>Түсінікті болу үшін жасалған. · Сейтқазы С.Қ.</span>
+        <span>Көр. Іске қос. Түсін.</span>
         <button className="plain" onClick={downloadAll}>
-          <Download size={15} />
+          <Download size={19} />
           Код архиві
         </button>
       </footer>
       {defense && (
         <aside className="presentation-bar" aria-label="Қорғау маршруты">
           <div className="presentation-label">
-            <span className="eyebrow">
-              ҚОРҒАУ МАРШРУТЫ · {route + 1} / {routes.length}
+            <span>
+              {route + 1} / {routes.length}
             </span>
             <h3>{routes[route].title}</h3>
           </div>
@@ -457,7 +407,7 @@ export default function App() {
                 setAutoPresent((v) => !v);
               }}
             >
-              {autoPresent ? <Pause size={16} /> : <Play size={16} />}
+              {autoPresent ? <Pause size={19} /> : <Play size={19} />}
               <span>{autoPresent ? "Кідірту" : "Авто көрсету"}</span>
             </button>
             <button
@@ -465,7 +415,7 @@ export default function App() {
               disabled={route === 0}
               onClick={() => move(route - 1)}
             >
-              <ChevronLeft size={20} />
+              <ChevronLeft size={22} />
             </button>
             <button
               className="primary"
@@ -473,13 +423,13 @@ export default function App() {
               disabled={route === routes.length - 1}
               onClick={() => move(route + 1)}
             >
-              <ChevronRight size={20} />
+              <ChevronRight size={22} />
             </button>
             <button
               aria-label={fullscreen ? "Толық экраннан шығу" : "Толық экран"}
               onClick={full}
             >
-              {fullscreen ? <Minimize size={18} /> : <Maximize size={18} />}
+              {fullscreen ? <Minimize size={20} /> : <Maximize size={20} />}
             </button>
             <button
               aria-label="Қорғау режимін жабу"
@@ -489,7 +439,7 @@ export default function App() {
                 if (document.fullscreenElement) void document.exitFullscreen();
               }}
             >
-              <X size={18} />
+              <X size={21} />
             </button>
           </div>
         </aside>
@@ -498,7 +448,7 @@ export default function App() {
         <div role="status" className="notice">
           {notice}
           <button aria-label="Хабарламаны жабу" onClick={() => setNotice("")}>
-            <X size={16} />
+            <X size={19} />
           </button>
         </div>
       )}

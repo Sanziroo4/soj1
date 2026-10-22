@@ -1,3 +1,4 @@
+import "./processor-experience.css";
 import { useGuidedDemo } from "./useGuidedDemo";
 import { IntegerInput } from "./IntegerInput";
 import { useMemo, useState } from "react";
@@ -21,7 +22,8 @@ export function Instruction({
 }) {
   const [op, setOp] = useState<Op>("add"),
     [a, setA] = useState(7),
-    [b, setB] = useState(5);
+    [b, setB] = useState(5),
+    [memory, setMemory] = useState(42);
   const play = usePlayback(5);
   useGuidedDemo(play, 5, demo, onComplete);
   const reset = () => {
@@ -31,22 +33,22 @@ export function Instruction({
   const result = useMemo(
     () =>
       execute(
-        `.data\nvalue: .word 42\n.text\n${op === "add" ? "add $t2, $t0, $t1" : op === "lw" ? "lw $t2, 0($s0)" : op === "sw" ? "sw $t1, 0($s0)" : "beq $t0, $t1, equal"}\nnop\nequal:\nnop`,
+        `.data\nvalue: .word ${memory}\n.text\n${op === "add" ? "add $t2, $t0, $t1" : op === "lw" ? "lw $t2, 0($s0)" : op === "sw" ? "sw $t1, 0($s0)" : "beq $t0, $t1, equal"}\nnop\nequal:\nnop`,
         [],
         { $t0: a, $t1: b, $s0: DATA_BASE },
       ),
-    [op, a, b],
+    [op, a, b, memory],
   );
   const initial = result.trace[0],
     after = result.trace[1],
     stage = play.index;
   const state =
     stage >= (op === "sw" ? 4 : op === "beq" ? 3 : 5) ? after : initial;
-  const value = op === "add" ? after.regs[10] : op === "lw" ? 42 : b;
+  const value = op === "add" ? after.regs[10] : op === "lw" ? memory : b;
   const descriptions = {
     add: [
       "PC = 0x00400000 → командалар жадынан add $t2, $t0, $t1 алынады.",
-      `$t0 = ${a} және $t1 = ${b} регистрлерден оқылады. Басқару: RegWrite = 1.`,
+      `$t0 = ${a} және $t1 = ${b} регистрлерден оқылады. ALU осы екі мәнді алады.`,
       `ALU: ${a} + ${b} = ${after.error ? "overflow" : value}.`,
       "Бұл add командасы деректер жадын қолданбайды. Есептелген нәтиже әрі қарай беріледі.",
       after.error
@@ -57,15 +59,15 @@ export function Instruction({
       "PC бойынша lw $t2, 0($s0) командасы алынады.",
       `Базалық адрес $s0 = ${format(DATA_BASE, "HEX")}, offset = 0.`,
       `ALU адрес есептейді: ${format(DATA_BASE, "HEX")} + 0. Бұл 42 мәні емес, адрес.`,
-      "Деректер жады оқылады: [0x10010000] = 42.",
-      "$t2 ← 42. Жадтан оқылған мән регистрге жазылды.",
+      `Деректер жады оқылады: [0x10010000] = ${memory}.`,
+      `$t2 ← ${memory}. Жадтан оқылған мән регистрге жазылды.`,
     ],
     sw: [
       "PC бойынша sw $t1, 0($s0) командасы алынады.",
       `$s0 = ${format(DATA_BASE, "HEX")}, жазылатын дерек $t1 = ${b}.`,
       "ALU адрес есептейді: 0x10010000 + 0.",
       `[0x10010000] ← ${b}. Деректер жадына жазылды.`,
-      "sw регистрге нәтиже жазбайды. RegWrite = 0.",
+      "sw регистрді өзгертпейді. Нәтиже жадта сақталды.",
     ],
     beq: [
       "PC бойынша beq $t0, $t1, equal командасы алынады.",
@@ -88,7 +90,7 @@ export function Instruction({
               ? [op === "add" || op === "lw" ? "Регистрлер" : "Жазу жоқ"]
               : [];
   return (
-    <>
+    <div className="instruction-experience">
       <div className="scenario-tabs">
         {(["add", "lw", "sw", "beq"] as Op[]).map((x) => (
           <button
@@ -96,6 +98,7 @@ export function Instruction({
             onClick={() => {
               setOp(x);
               reset();
+              play.setPlaying(true);
             }}
             key={x}
           >
@@ -123,38 +126,57 @@ export function Instruction({
             <code className="lime">
               {result.program.instructions[0].source}
             </code>
-            <span className="tag">5 КЕЗЕҢ</span>
+            <span className="command-stage-count">{stage}/5</span>
           </div>
           <div className="operand-inputs">
-            <label>
-              $t0
-              <IntegerInput
-                label="Команда t0"
-                value={a}
-                onDirty={reset}
-                onChange={(n) => {
-                  setA(n);
-                  reset();
-                }}
-              />
-            </label>
-            <label>
-              $t1
-              <IntegerInput
-                label="Команда t1"
-                value={b}
-                onDirty={reset}
-                onChange={(n) => {
-                  setB(n);
-                  reset();
-                }}
-              />
-            </label>
-            <span className="dim">
-              {op === "lw"
-                ? "lw дерегі: [0x10010000] = 42"
-                : "Мәндерді өзгертіп, қайта зерттеңіз"}
-            </span>
+            {(op === "add" || op === "beq") && (
+              <label>
+                $t0
+                <IntegerInput
+                  label="Команда t0"
+                  value={a}
+                  onDirty={reset}
+                  onChange={(n) => {
+                    setA(n);
+                    reset();
+                  }}
+                />
+              </label>
+            )}
+            {op !== "lw" && (
+              <label>
+                $t1
+                <IntegerInput
+                  label="Команда t1"
+                  value={b}
+                  onDirty={reset}
+                  onChange={(n) => {
+                    setB(n);
+                    reset();
+                  }}
+                />
+              </label>
+            )}
+            {op === "lw" && (
+              <label>
+                Жадтағы мән
+                <IntegerInput
+                  label="Команда жад мәні"
+                  value={memory}
+                  onDirty={reset}
+                  onChange={(n) => {
+                    setMemory(n);
+                    reset();
+                  }}
+                />
+              </label>
+            )}
+            {(op === "lw" || op === "sw") && (
+              <div className="command-memory-address">
+                <span>Жад адресі</span>
+                <code>0x10010000</code>
+              </div>
+            )}
           </div>
           <div className="stage-track">
             {stages.map((s, i) => (
@@ -174,54 +196,148 @@ export function Instruction({
               </button>
             ))}
           </div>
-          <div className="data-flow">
-            <div className={stage === 2 ? "lit" : ""}>
-              <small>РЕГИСТРЛЕР</small>
-              <code>
-                {a} <span>·</span> {b}
-              </code>
-            </div>
-            <b>→</b>
-            <div className={stage === 3 ? "lit" : ""}>
-              <small>ALU</small>
-              <code>
-                {stage >= 3
-                  ? op === "add"
-                    ? after.error
-                      ? "!"
-                      : value
-                    : op === "beq"
-                      ? a === b
-                        ? "="
-                        : "≠"
-                      : "0x10010000"
-                  : "—"}
-              </code>
-            </div>
-            <b>→</b>
-            <div
-              className={
-                stage === 5 || (stage === 4 && (op === "sw" || op === "lw"))
-                  ? "lit"
-                  : ""
-              }
+          <div
+            className={`instruction-arena operation-${op} arena-stage-${stage} ${after.error ? "arena-error" : ""}`}
+          >
+            <div className="arena-orbit" aria-hidden="true" />
+            <div className="arena-orbit second" aria-hidden="true" />
+            <svg
+              className="arena-wires"
+              viewBox="0 0 840 300"
+              preserveAspectRatio="none"
+              aria-hidden="true"
             >
-              <small>
-                {op === "sw" ? "ЖАД" : op === "beq" ? "КЕЛЕСІ PC" : "$t2"}
-              </small>
-              <code>
-                {op === "beq"
-                  ? format(TEXT_BASE + state.pc * 4, "HEX")
-                  : op === "sw"
-                    ? state.memory[DATA_BASE]
-                    : state.regs[10]}
-              </code>
+              <path
+                className={stage >= 2 ? "active" : ""}
+                d="M150 150 C250 150 240 150 335 150"
+              />
+              <path
+                className={stage >= 3 ? "active" : ""}
+                d="M505 150 C600 150 600 150 690 150"
+              />
+            </svg>
+            <div className="data-flow">
+              <div
+                className={`arena-node source-node ${stage === 2 ? "lit" : ""}`}
+              >
+                <small>{op === "lw" ? "БАЗАЛЫҚ АДРЕС" : "РЕГИСТРЛЕР"}</small>
+                <code className={op === "lw" ? "address-value" : ""}>
+                  {op === "lw" ? (
+                    "0x10010000"
+                  ) : op === "sw" ? (
+                    b
+                  ) : (
+                    <>
+                      {a}
+                      <span> · </span>
+                      {b}
+                    </>
+                  )}
+                </code>
+              </div>
+              <b aria-hidden="true">→</b>
+              <div
+                className={`arena-node alu-node ${stage === 3 ? "lit" : ""}`}
+              >
+                <small>{op === "beq" ? "САЛЫСТЫРУ" : "ALU"}</small>
+                <code
+                  className={op === "lw" || op === "sw" ? "address-value" : ""}
+                >
+                  {stage >= 3
+                    ? op === "add"
+                      ? after.error
+                        ? "!"
+                        : value
+                      : op === "beq"
+                        ? a === b
+                          ? "="
+                          : "≠"
+                        : "0x10010000"
+                    : "—"}
+                </code>
+                <span className="alu-symbol" aria-hidden="true">
+                  {op === "add" ? "+" : op === "beq" ? "?" : "↗"}
+                </span>
+              </div>
+              <b aria-hidden="true">→</b>
+              <div
+                className={`arena-node destination-node ${stage === 5 || (stage === 4 && (op === "sw" || op === "lw")) ? "lit" : ""}`}
+              >
+                <small>
+                  {op === "sw" ? "ЖАД" : op === "beq" ? "КЕЛЕСІ PC" : "$t2"}
+                </small>
+                <code className={op === "beq" ? "address-value" : ""}>
+                  {op === "beq"
+                    ? format(TEXT_BASE + state.pc * 4, "HEX")
+                    : op === "sw"
+                      ? state.memory[DATA_BASE]
+                      : state.regs[10]}
+                </code>
+              </div>
             </div>
+            {stage > 0 && (
+              <div
+                key={`${op}-${stage}-${a}-${b}-${memory}`}
+                className={`transfer-packet packet-stage-${stage}`}
+                aria-hidden="true"
+              >
+                {stage === 1
+                  ? "Команда"
+                  : stage === 2
+                    ? op === "lw"
+                      ? "адрес"
+                      : op === "sw"
+                        ? b
+                        : `${a} · ${b}`
+                    : stage === 3
+                      ? op === "add"
+                        ? after.error
+                          ? "!"
+                          : value
+                        : op === "beq"
+                          ? a === b
+                            ? "тең"
+                            : "тең емес"
+                          : "адрес"
+                      : op === "lw"
+                        ? memory
+                        : op === "sw"
+                          ? b
+                          : op === "beq"
+                            ? "PC"
+                            : value}
+              </div>
+            )}
+            {((stage === 5 && (op === "add" || op === "lw") && !after.error) ||
+              (stage >= 4 && op === "sw") ||
+              (stage >= 3 && op === "beq")) && (
+              <div className="command-payoff" key={`${op}-${stage}`}>
+                <span>
+                  {op === "beq"
+                    ? a === b
+                      ? "Тармақ алынды"
+                      : "Келесі команда"
+                    : op === "sw"
+                      ? "Жадқа жазылды"
+                      : "Нәтиже дайын"}
+                </span>
+                {Array.from({ length: 8 }, (_, i) => (
+                  <i
+                    key={i}
+                    style={
+                      {
+                        "--spark-angle": `${i * 45}deg`,
+                      } as import("react").CSSProperties
+                    }
+                  />
+                ))}
+              </div>
+            )}
           </div>
           <Controls {...play} max={5} />
         </div>
         <aside className="panel now">
-          <span className="eyebrow">ҚАЗІР НЕ БОЛЫП ЖАТЫР?</span>
+          <span className="command-context-label">Қазір не болып жатыр?</span>
           <h3>
             {stage
               ? `${stages[stage - 1]} · ${["Команданы алу", "Талдау", "Орындау", "Жад кезеңі", "Нәтижені жазу"][stage - 1]}`
@@ -250,12 +366,8 @@ export function Instruction({
             <dt>Таңдалған келесі PC</dt>
             <dd className="mono">{format(TEXT_BASE + state.pc * 4, "HEX")}</dd>
           </dl>
-          <small>
-            Бес кезең — классикалық оқу моделі. Бұл көрініс интерпретатор
-            нәтижесін кезеңдерге бөледі; аппараттық таймингті эмуляцияламайды.
-          </small>
         </aside>
       </div>
-    </>
+    </div>
   );
 }

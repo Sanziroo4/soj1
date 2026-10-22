@@ -1,5 +1,14 @@
+import {
+  ArrowRight,
+  Check,
+  Cpu,
+  GitBranch,
+  Database,
+  Braces,
+} from "lucide-react";
 import type { Program, State } from "../model/mips";
-import { TEXT_BASE, format, registerNames } from "../model/mips";
+import { registerNames } from "../model/mips";
+
 export function ExecutionFlow({
   program,
   state,
@@ -12,9 +21,15 @@ export function ExecutionFlow({
   const ins = program.instructions.find((i) => i.line === state.executedLine);
   const op = ins?.op || "",
     branch = state.branch;
-  const reads = (r: string) =>
-    r.startsWith("$") ? (state.regs[registerNames.indexOf(r)] ?? r) : r;
-  const isMath = [
+  const get = (r: string) => {
+    const n = registerNames.indexOf(r);
+    return n >= 0
+      ? state.regs[n]
+      : /^\$\d+$/.test(r)
+        ? state.regs[Number(r.slice(1))]
+        : r;
+  };
+  const arithmetic = [
     "add",
     "addi",
     "addu",
@@ -34,79 +49,102 @@ export function ExecutionFlow({
     "sll",
     "srl",
   ].includes(op);
-  const nodes = [
-    ["PC", format(TEXT_BASE + state.pc * 4, "HEX"), !!ins],
-    ["Команда", op || "Дайын", !!ins],
-    [
-      "Регистрлер",
-      `$t0=${state.regs[8]} · $t1=${state.regs[9]}`,
-      !!ins && op !== "j",
-    ],
-    [
-      "ALU / шарт",
-      branch
+  const compared =
+    branch && ins ? ins.args.slice(0, -1).map(get).join(" · ") : null;
+  const action = state.error
+    ? "Орындау тоқтады"
+    : state.halted
+      ? "Нәтиже дайын"
+      : branch
         ? branch.taken
-          ? "Ақиқат ↗"
-          : "Жалған ↓"
-        : isMath
-          ? "Есептеу"
-          : op === "lw" || op === "sw"
-            ? "Адрес"
-            : "—",
-      !!branch || isMath || op === "lw" || op === "sw",
-    ],
-    [
-      "Күйді жаңарту",
-      op === "sw"
-        ? "Жадқа жазу"
-        : op === "syscall"
-          ? "Енгізу / шығару"
-          : branch
-            ? "Келесі PC"
-            : state.changed.map((i) => registerNames[i]).join(", ") || "—",
-      !!ins,
-    ],
-  ];
+          ? "Тармақ алынды"
+          : "Келесі команда"
+        : op === "sw"
+          ? "Жадқа жазу"
+          : op === "lw"
+            ? "Жадтан оқу"
+            : op === "syscall"
+              ? state.changed.includes(2)
+                ? "Сан енгізілді"
+                : state.output
+                  ? "Нәтиже шығарылды"
+                  : "Бағдарлама аяқталды"
+              : arithmetic
+                ? "Есептеу орындалды"
+                : op === "j"
+                  ? "Белгіге өту"
+                  : state.changed.length
+                    ? "Мән сақталды"
+                    : "Команданы күту";
+  const changed = state.changed
+    .map((i) => `${registerNames[i]} = ${state.regs[i]}`)
+    .join(" · ");
+  const value =
+    compared ||
+    changed ||
+    (state.steps
+      ? `$t0 = ${state.regs[8]} · $t1 = ${state.regs[9]}`
+      : "Мәндерді енгізіңіз");
+  const actionIcon = branch ? (
+    <GitBranch size={21} />
+  ) : op === "lw" || op === "sw" ? (
+    <Database size={21} />
+  ) : state.halted ? (
+    <Check size={21} />
+  ) : (
+    <Cpu size={21} />
+  );
   return (
     <div
-      className={`execution-flow ${playing ? "running" : ""}`}
+      className={`execution-flow ${playing ? "running" : ""} ${state.halted ? "complete" : ""}`}
       aria-label="Зертхананың жұмыс істеп жатқан процессоры"
     >
       <div className="flow-heading">
-        <span className="eyebrow">
-          <i className="status-dot" />
-          ОҚУ ПРОЦЕССОРЫ
-        </span>
         <span>
-          {state.halted
-            ? "Аяқталды"
-            : playing
-              ? "Автоматты орындалуда"
-              : state.steps
-                ? "Кідіртілді"
-                : "Дайын"}
+          <i className="status-dot" />
+          Процессор
         </span>
+        <strong>
+          {state.error
+            ? "Қате"
+            : state.halted
+              ? "Аяқталды"
+              : playing
+                ? "Орындалуда"
+                : state.steps
+                  ? "Кідіртілді"
+                  : "Дайын"}
+        </strong>
       </div>
       <div className="flow-nodes">
-        {nodes.map(([name, value, lit], i) => (
-          <div className={lit ? "lit" : ""} key={name as string}>
-            <small>{name}</small>
-            <strong key={state.steps}>{value}</strong>
-            {i < 4 && <b aria-hidden="true">→</b>}
-          </div>
-        ))}
+        <div className={ins ? "lit" : ""}>
+          <span>
+            <Braces size={19} />
+            Команда
+          </span>
+          <strong key={`op-${state.steps}`}>{op || "—"}</strong>
+        </div>
+        <ArrowRight className="flow-connector" aria-hidden="true" size={23} />
+        <div className={state.steps ? "lit" : ""}>
+          <span>Мәндер</span>
+          <strong key={`value-${state.steps}`}>{value}</strong>
+        </div>
+        <ArrowRight className="flow-connector" aria-hidden="true" size={23} />
+        <div className={state.steps ? "lit flow-action" : "flow-action"}>
+          <span>
+            {actionIcon}
+            {branch ? "Шарт" : "Әрекет"}
+          </span>
+          <strong key={`action-${state.steps}`}>{action}</strong>
+        </div>
       </div>
-      <p aria-live="off">
-        {branch
-          ? `${ins!.args.slice(0, -1).map(reads).join(" · ")} → ${branch.condition} → ${branch.taken ? "белгіге өту: " + branch.target : "келесі команда"}`
-          : ins
-            ? ins.source
-            : "Бір рет «Есепті орындау» басыңыз. Әр қадам өзі жалғасады."}
-      </p>
-      <small>
-        Бастапқы код деңгейіндегі күй. Бұл көріністегі қадам аппараттық такт
-        емес.
-      </small>
+      {branch && (
+        <p className={`flow-branch ${branch.taken ? "taken" : ""}`}>
+          <GitBranch size={18} />
+          <code>{branch.condition}</code>
+          <span>{branch.taken ? `→ ${branch.target}` : "↓ келесі жол"}</span>
+        </p>
+      )}
     </div>
   );
 }

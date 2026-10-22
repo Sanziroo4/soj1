@@ -1,4 +1,12 @@
-import { Play, Pause, SkipBack, SkipForward, RotateCcw } from "lucide-react";
+import {
+  Play,
+  Pause,
+  SkipBack,
+  SkipForward,
+  RotateCcw,
+  Repeat2,
+} from "lucide-react";
+import "./controls.css";
 export function Controls({
   playing,
   setPlaying,
@@ -9,6 +17,8 @@ export function Controls({
   setSpeed,
   loop,
   setLoop,
+  startLabel = "Бастау",
+  pauseLabel = "Кідірту",
 }: {
   playing: boolean;
   setPlaying: (v: boolean) => void;
@@ -19,54 +29,63 @@ export function Controls({
   setSpeed: (v: number) => void;
   loop?: boolean;
   setLoop?: (v: boolean) => void;
+  startLabel?: string;
+  pauseLabel?: string;
 }) {
+  const position = Math.min(max, Math.max(0, index));
   return (
     <div className="controls">
       <button
-        className="primary"
+        className="primary playback-primary"
         disabled={max === 0}
         onClick={() => {
           if (index >= max) setIndex(0);
           setPlaying(!playing);
         }}
       >
-        {playing ? <Pause size={16} /> : <Play size={16} />}{" "}
-        {playing ? "Кідірту" : "Бастау"}
+        {playing ? <Pause size={20} /> : <Play size={20} />}{" "}
+        {playing ? pauseLabel : startLabel}
       </button>
-      <button
-        title="Алдыңғы қадам"
-        aria-label="Алдыңғы қадам"
-        disabled={index === 0}
-        onClick={() => {
-          setPlaying(false);
-          setIndex(index - 1);
-        }}
+      <div
+        className="playback-steps"
+        role="group"
+        aria-label="Қадамдарды басқару"
       >
-        <SkipBack size={17} />
-      </button>
-      <button
-        title="Келесі қадам"
-        aria-label="Келесі қадам"
-        disabled={index === max}
-        onClick={() => {
-          setPlaying(false);
-          setIndex(index + 1);
-        }}
-      >
-        <SkipForward size={17} />
-      </button>
-      <button
-        title="Қайта бастау"
-        aria-label="Қайта бастау"
-        onClick={() => {
-          setPlaying(false);
-          setIndex(0);
-        }}
-      >
-        <RotateCcw size={17} />
-      </button>
+        <button
+          title="Алдыңғы қадам"
+          aria-label="Алдыңғы қадам"
+          disabled={index === 0}
+          onClick={() => {
+            setPlaying(false);
+            setIndex(index - 1);
+          }}
+        >
+          <SkipBack size={20} />
+        </button>
+        <button
+          title="Келесі қадам"
+          aria-label="Келесі қадам"
+          disabled={index >= max}
+          onClick={() => {
+            setPlaying(false);
+            setIndex(index + 1);
+          }}
+        >
+          <SkipForward size={20} />
+        </button>
+        <button
+          title="Қайта бастау"
+          aria-label="Қайта бастау"
+          onClick={() => {
+            setPlaying(false);
+            setIndex(0);
+          }}
+        >
+          <RotateCcw size={20} />
+        </button>
+      </div>
       <label className="speed">
-        Жылдамдық
+        <span>Жылдамдық</span>
         <select
           value={speed}
           onChange={(e) => setSpeed(Number(e.target.value))}
@@ -79,18 +98,29 @@ export function Controls({
         </select>
       </label>
       {setLoop && (
-        <label className="loop-control">
+        <label className={`loop-control ${loop ? "enabled" : ""}`}>
           <input
             type="checkbox"
             checked={loop}
             onChange={(e) => setLoop(e.target.checked)}
           />
-          Қайталау
+          <Repeat2 size={18} />
+          <span>Қайталау</span>
         </label>
       )}
-      <span className="mono dim">
-        {index} / {max}
+      <span className="mono dim" aria-label="Орындалу қадамы">
+        {position} / {max}
       </span>
+      <div
+        className="playback-progress"
+        role="progressbar"
+        aria-label="Орындалу барысы"
+        aria-valuemin={0}
+        aria-valuemax={max || 1}
+        aria-valuenow={position}
+      >
+        <span style={{ transform: `scaleX(${max ? position / max : 0})` }} />
+      </div>
     </div>
   );
 }

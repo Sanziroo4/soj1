@@ -1,3 +1,4 @@
+import "./processor-experience.css";
 import { useGuidedDemo } from "./useGuidedDemo";
 import { useState } from "react";
 import { pipeline, stages } from "../model/pipeline";
@@ -17,7 +18,7 @@ export function Pipeline({
   useGuidedDemo(play, p.cycles, demo, onComplete);
   return (
     <div
-      className="panel pipeline"
+      className="panel pipeline pipeline-experience"
       ref={play.viewportRef}
       data-in-view={play.inView}
     >
@@ -43,78 +44,121 @@ export function Pipeline({
         ))}
       </div>
       <div
-        className="pipeline-live"
+        className="pipeline-live spatial-pipeline"
         aria-label="Пайплайндағы ағымдағы командалар"
       >
-        {p.rows.map((row, i) => (
-          <div
-            key={i}
-            className={
-              row.cells[play.index - 1] === "STALL" ? "hazard-active" : ""
-            }
-          >
-            <span>I{i + 1}</span>
-            <code>{row.code}</code>
-            <strong>{row.cells[play.index - 1] || "Күту"}</strong>
-          </div>
-        ))}
-      </div>
-      <div className="table-scroll">
-        <table className="pipeline-table">
-          <thead>
-            <tr>
-              <th>Команда / такт</th>
-              {Array.from({ length: p.cycles }, (_, i) => (
-                <th key={i} className={play.index === i + 1 ? "current" : ""}>
-                  {i + 1}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {p.rows.map((r, i) => (
-              <tr key={i}>
-                <th>
-                  <code>{r.code}</code>
-                </th>
-                {r.cells.map((c, j) => (
-                  <td
-                    key={j}
-                    className={`${c === "STALL" ? "stall" : c ? "stage-" + stages.indexOf(c as (typeof stages)[number]) : ""} ${play.index === j + 1 ? "current" : ""} ${j + 1 > play.index ? "future" : ""}`}
-                  >
-                    {c || "·"}
-                  </td>
+        <div className="pipeline-clock">
+          <span>
+            Такт <strong>{play.index}</strong>
+          </span>
+          <span>
+            {mode === "stall"
+              ? "4 кідіріс"
+              : mode === "forward"
+                ? "Нәтиже тікелей беріледі"
+                : "Командалар қатар қозғалады"}
+          </span>
+        </div>
+        <div className="pipeline-stage-labels">
+          <span />
+          {stages.map((stage, i) => (
+            <div key={stage}>
+              <strong>{stage}</strong>
+              <span>{["Алу", "Талдау", "Есептеу", "Жад", "Жазу"][i]}</span>
+            </div>
+          ))}
+        </div>
+        {p.rows.map((row, i) => {
+          const current = row.cells[play.index - 1],
+            isStall = current === "STALL",
+            complete =
+              play.index >= row.cells.lastIndexOf("WB") + 1 && play.index > 0;
+          const lane = isStall
+            ? 1
+            : current
+              ? stages.indexOf(current as (typeof stages)[number])
+              : complete
+                ? 4
+                : 0;
+          return (
+            <div className="pipeline-conveyor-row" key={i}>
+              <span className="pipeline-row-label">
+                <span>I{i + 1}</span>
+                <code>{row.code}</code>
+              </span>
+              <div className="pipeline-lane">
+                {stages.map((stage) => (
+                  <i key={stage} />
                 ))}
-              </tr>
-            ))}
-          </tbody>
-        </table>
+                <div
+                  className={`pipeline-token ${isStall ? "hazard-active" : ""} ${!current ? "token-idle" : ""} ${complete ? "token-complete" : ""}`}
+                  style={
+                    {
+                      "--lane": Math.max(0, lane),
+                    } as import("react").CSSProperties
+                  }
+                >
+                  <span>I{i + 1}</span>
+                  <strong>{current || (complete ? "✓" : "Күту")}</strong>
+                </div>
+              </div>
+            </div>
+          );
+        })}
       </div>
       <Controls {...play} max={p.cycles} />
-      <div className="callout">
-        <strong>Қазір не болып жатыр? · Такт {play.index}</strong>
-        <p>
-          {play.index === 0
-            ? "Бастау батырмасын басып, командалардың қабаттасуын бақылаңыз."
-            : p.rows
-                .map(
-                  (r, i) =>
-                    `I${i + 1}: ${r.cells[play.index - 1] || "белсенді емес"}`,
-                )
-                .join(" · ")}
-        </p>
+      <div className="callout pipeline-insight" aria-live="polite">
+        <strong>
+          {play.index === p.cycles
+            ? "Үш команда аяқталды"
+            : play.index
+              ? `Қазір: ${p.rows.map((r, i) => `I${i + 1} ${r.cells[play.index - 1] || "—"}`).join(" · ")}`
+              : "Бір рет бас. Қабаттасуды бақыла."}
+        </strong>
         <p>
           {mode === "independent"
-            ? "Тәуелсіз 3 команда 7 тактте аяқталады: 5 кезең + келесі екі команданың басталуы. Бұл бір команданың бес кезеңінен бөлек ұғым."
+            ? "Тәуелсіз үш команда 7 тактте аяқталады."
             : mode === "stall"
-              ? "Forwarding жоқ: келесі команда операндты ID-де оқиды. WB такттің бірінші жартысында жазады, ID екінші жартысында оқиды. Әр тәуелділікке 2 stall, барлығы 4 кідіріс. Үшінші команданы алу ID босағанша кешіктіріледі."
-              : "ALU нәтижесі EX/MEM → EX арқылы келесі командаға тікелей беріледі. Осы ALU → ALU мысалында stall жоқ. lw → тәуелді команда болса, осы модельде бір load-use stall керек болар еді."}
+              ? "Келесі команда дайын мәнді күтеді. Әр тәуелділікке екі кідіріс қосылады."
+              : "ALU нәтижесі келесі команданың EX кезеңіне тікелей өтеді. Бұл мысалда кідіріс жоқ."}
         </p>
       </div>
-      <small>
-        5 кезеңді, ретімен орындалатын оқу моделі. Нақты процессордың ені,
-        кэштері, болжауы және кідірістері өзгеше болуы мүмкін.
-      </small>
+      <details className="pipeline-timeline">
+        <summary>
+          Такт кестесін ашу <span>{p.cycles} такт</span>
+        </summary>
+        <div className="table-scroll">
+          <table className="pipeline-table">
+            <thead>
+              <tr>
+                <th>Команда / такт</th>
+                {Array.from({ length: p.cycles }, (_, i) => (
+                  <th key={i} className={play.index === i + 1 ? "current" : ""}>
+                    {i + 1}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {p.rows.map((r, i) => (
+                <tr key={i}>
+                  <th>
+                    <code>{r.code}</code>
+                  </th>
+                  {r.cells.map((c, j) => (
+                    <td
+                      key={j}
+                      className={`${c === "STALL" ? "stall" : c ? "stage-" + stages.indexOf(c as (typeof stages)[number]) : ""} ${play.index === j + 1 ? "current" : ""} ${j + 1 > play.index ? "future" : ""}`}
+                    >
+                      {c || "·"}
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </details>
     </div>
   );
 }

@@ -1,3 +1,4 @@
+import "./processor-experience.css";
 import { usePlayback } from "./usePlayback";
 import { useState, useEffect } from "react";
 import { ArrowUpRight, RotateCcw, Plus, Minus } from "lucide-react";
@@ -74,99 +75,129 @@ const connections = [
 export function Chip({ onClick }: { onClick: () => void }) {
   return (
     <button
-      className="chip-scene"
+      className="chip-scene cinematic-chip"
       onClick={onClick}
       aria-label="Процессордың ішін ашу"
     >
       <svg
-        viewBox="0 0 600 490"
+        viewBox="0 0 640 620"
         role="img"
         aria-label="Анимацияланған MIPS процессоры"
       >
         <defs>
-          <linearGradient id="chipFill" x2="1" y2="1">
-            <stop stopColor="#263b2d" />
-            <stop offset="1" stopColor="#101c17" />
+          <linearGradient id="spatial-chip-top" x1="0" y1="0" x2="1" y2="1">
+            <stop stopColor="#3c5531" />
+            <stop offset=".5" stopColor="#1c2c20" />
+            <stop offset="1" stopColor="#0e1612" />
           </linearGradient>
-          <radialGradient id="glow">
-            <stop stopColor="#c6f567" stopOpacity=".16" />
-            <stop offset="1" stopColor="#c6f567" stopOpacity="0" />
+          <linearGradient id="spatial-chip-edge">
+            <stop stopColor="#9cbf65" />
+            <stop offset="1" stopColor="#1d3b2c" />
+          </linearGradient>
+          <radialGradient id="spatial-chip-aura">
+            <stop stopColor="#d2ff5a" stopOpacity=".22" />
+            <stop offset="1" stopColor="#81f4c1" stopOpacity="0" />
           </radialGradient>
         </defs>
-        <circle cx="300" cy="240" r="235" fill="url(#glow)" />
-        {Array.from({ length: 11 }, (_, i) => (
-          <g key={i} className="chip-trace">
-            <path
-              d={`M ${170 + i * 24} 170 V ${80 - (i % 3) * 16} L ${135 + i * 30} ${45 + (i % 2) * 10}`}
-            />
-            <path
-              d={`M ${170 + i * 24} 320 V ${390 + (i % 3) * 16} L ${135 + i * 30} ${435 - (i % 2) * 10}`}
-            />
-            <path
-              d={`M 210 ${160 + i * 15} H ${80 - (i % 3) * 18} L ${55} ${125 + i * 23}`}
-            />
-            <path
-              d={`M 390 ${160 + i * 15} H ${505 + (i % 3) * 18} L 550 ${125 + i * 23}`}
-            />
-          </g>
-        ))}
+        <circle
+          className="chip-aura"
+          cx="320"
+          cy="320"
+          r="285"
+          fill="url(#spatial-chip-aura)"
+        />
+        <g className="chip-orbits" fill="none">
+          <ellipse
+            cx="320"
+            cy="340"
+            rx="288"
+            ry="138"
+            transform="rotate(-24 320 340)"
+          />
+          <ellipse
+            cx="320"
+            cy="340"
+            rx="280"
+            ry="135"
+            transform="rotate(24 320 340)"
+          />
+          <circle cx="320" cy="320" r="265" />
+        </g>
+        <g className="chip-base-layer">
+          <path
+            d="M320 240 548 371 320 502 92 371Z"
+            fill="#10241b"
+            stroke="#3c6a46"
+          />
+          <path
+            d="M320 260 514 372 320 484 126 372Z"
+            fill="none"
+            stroke="#7fa86a"
+            strokeDasharray="5 10"
+          />
+        </g>
+        <g className="chip-middle-layer">
+          <path
+            d="M320 170 530 291 530 322 320 443 110 322 110 291Z"
+            fill="#112218"
+            stroke="#547341"
+          />
+          <path
+            d="M320 170 530 291 320 412 110 291Z"
+            fill="#1e3425"
+            stroke="#91b861"
+          />
+          {Array.from({ length: 9 }, (_, i) => (
+            <g key={i} className="chip-pin">
+              <path
+                d={`M${140 + i * 19} ${284 - i * 11} l-34 -20 M${500 - i * 19} ${284 - i * 11} l34 -20 M${140 + i * 19} ${305 + i * 11} l-34 20 M${500 - i * 19} ${305 + i * 11} l34 20`}
+              />
+            </g>
+          ))}
+        </g>
         <g className="chip-core">
           <path
-            d="M300 110 440 190 440 310 300 390 160 310 160 190Z"
-            fill="#0a100c"
-            stroke="#72904d"
+            d="M320 118 490 216 490 255 320 354 150 255 150 216Z"
+            fill="#163220"
+            stroke="#89b952"
           />
           <path
-            d="M300 96 440 176 440 294 300 374 160 294 160 176Z"
-            fill="url(#chipFill)"
-            stroke="#c6f567"
-            strokeWidth="1.5"
+            d="M320 118 490 216 320 314 150 216Z"
+            fill="url(#spatial-chip-top)"
+            stroke="#d2ff5a"
+            strokeWidth="2"
           />
           <path
-            d="M300 130 409 193 409 276 300 339 191 276 191 193Z"
-            fill="#17251b"
-            stroke="#556e39"
+            d="M320 151 433 216 320 281 207 216Z"
+            fill="#1b3020"
+            stroke="#729b4b"
           />
           <path
-            d="M300 160 378 205 378 258 300 303 222 258 222 205Z"
-            fill="#192b1e"
-            stroke="#8ba956"
+            d="M320 172 397 216 320 260 243 216Z"
+            fill="#233d26"
+            stroke="#d2ff5a"
           />
           <text
-            x="300"
-            y="229"
+            x="320"
+            y="227"
             textAnchor="middle"
-            fill="#d6f4a6"
-            fontFamily="monospace"
-            fontSize="27"
-            fontWeight="700"
+            fill="#e5ffae"
+            fontWeight="750"
+            fontSize="31"
           >
             MIPS
           </text>
-          <text
-            x="300"
-            y="254"
-            textAnchor="middle"
-            fill="#91a27b"
-            fontFamily="monospace"
-            fontSize="10"
-            letterSpacing="4"
-          >
-            32-BIT CORE
-          </text>
-          <circle className="chip-dot" cx="300" cy="112" r="4" fill="#c6f567" />
+          <circle className="chip-dot" cx="320" cy="118" r="6" fill="#d2ff5a" />
         </g>
-        <text
-          x="300"
-          y="478"
-          textAnchor="middle"
-          fill="#9ba994"
-          fontSize="11"
-          letterSpacing="3"
-        >
-          БАСЫП, ІШІН ЗЕРТТЕҢІЗ ↗
-        </text>
+        <g className="chip-orbit-dots">
+          <circle cx="91" cy="387" r="7" fill="#81f4c1" />
+          <circle cx="535" cy="220" r="5" fill="#d2ff5a" />
+          <circle cx="430" cy="536" r="4" fill="#ffb879" />
+        </g>
       </svg>
+      <span className="chip-invitation">
+        Ішін ашып көр <ArrowUpRight size={22} aria-hidden="true" />
+      </span>
     </button>
   );
 }
@@ -182,12 +213,14 @@ export function Processor({ reveal }: { reveal: number }) {
     parts.find((part) => part.id === selected) ||
     links[selected as keyof typeof links];
   return (
-    <div className="structure-grid" ref={viewportRef}>
+    <div
+      className="structure-grid processor-experience"
+      ref={viewportRef}
+      data-in-view={inView}
+    >
       <div className="panel diagram-panel">
         <div className="panel-top">
-          <span className="eyebrow">
-            <i className="status-dot" /> ИНТЕРАКТИВТІ ҚҰРЫЛЫМ
-          </span>
+          <span className="eyebrow">Ішкі құрылым</span>
           <button onClick={() => setOpen(!open)}>
             <RotateCcw size={14} />
             {open ? "Қайта жинау" : "Ішін ашу"}
@@ -222,15 +255,6 @@ export function Processor({ reveal }: { reveal: number }) {
                   d={c.d}
                 />
               ))}
-              <text x="277" y="354">
-                деректер · 32 бит
-              </text>
-              <text x="340" y="195" className="control-label">
-                басқару
-              </text>
-              <text x="285" y="553" className="address-label">
-                келесі адрес → PC
-              </text>
             </g>
             {parts.map((part, i) => (
               <g
@@ -263,13 +287,15 @@ export function Processor({ reveal }: { reveal: number }) {
                   y={part.y}
                   width={part.w}
                   height={part.h}
-                  rx="7"
+                  rx="16"
                 />
-                <text x={part.x + 16} y={part.y + 34} className="part-name">
+                <text
+                  x={part.x + part.w / 2}
+                  y={part.y + part.h / 2 + 7}
+                  textAnchor="middle"
+                  className="part-name"
+                >
                   {part.name}
-                </text>
-                <text x={part.x + 16} y={part.y + 58} className="part-en">
-                  {part.en}
                 </text>
                 <circle cx={part.x + part.w - 16} cy={part.y + 16} r="3" />
               </g>
@@ -307,7 +333,7 @@ export function Processor({ reveal }: { reveal: number }) {
                   y="307"
                   fill="#e4e8df"
                   textAnchor="middle"
-                  fontSize="13"
+                  fontSize="20"
                 >
                   Ішін ашу ↗
                 </text>
@@ -354,21 +380,9 @@ export function Processor({ reveal }: { reveal: number }) {
         <div className="square-icon">
           {selected === "alu" ? "Σ" : selected === "clock" ? "↯" : "⌘"}
         </div>
-        <span className="eyebrow">
-          БӨЛІКТІ ЗЕРТТЕУ <ArrowUpRight size={15} />
-        </span>
         <h3>{p.name}</h3>
         <p>{p.plain}</p>
-        <dl>
-          <dt>Кіріс</dt>
-          <dd>{p.input}</dd>
-          <dt>Шығыс</dt>
-          <dd>{p.output}</dd>
-          <dt>Байланыс</dt>
-          <dd>{p.links}</dd>
-        </dl>
         <div className="callout">
-          <span className="eyebrow">НАҚТЫ МЫСАЛ</span>
           <p>{p.example}</p>
           {selected === "alu" && (
             <div className="sum-animation">
@@ -380,7 +394,17 @@ export function Processor({ reveal }: { reveal: number }) {
             </div>
           )}
         </div>
-        <small>Басқа бөлікті таңдау үшін сызбаны басыңыз.</small>
+        <details className="component-details">
+          <summary>Кіріс пен шығыс</summary>{" "}
+          <dl>
+            <dt>Кіріс</dt>
+            <dd>{p.input}</dd>
+            <dt>Шығыс</dt>
+            <dd>{p.output}</dd>
+            <dt>Байланыс</dt>
+            <dd>{p.links}</dd>
+          </dl>
+        </details>
       </aside>
     </div>
   );
