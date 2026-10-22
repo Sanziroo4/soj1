@@ -101,7 +101,7 @@ MARS_CLASSPATH=/tmp/mips-mars npm run test:mars
 2. **Actions → Deploy GitHub Pages → Run workflow** іске қосыңыз.
 3. Workflow тексеріп, build жасап, `dist/` артефактісін жариялайды. Нақты сайт адресін GitHub береді.
 
-`Check and build` workflow push/PR кезінде unit және browser тесттерін, TypeScript build және `/soj1/` production тексеруін орындайды. Deploy workflow қолмен іске қосылады; build жасау автоматты жариялау емес.
+`Check and build` workflow push/PR кезінде unit және browser тесттерін, TypeScript build және `/soj1/` production тексеруін орындайды. Deploy workflow `main` тармағына push кезінде автоматты іске қосылады; оны қолмен де іске қосуға болады. `configure-pages` сайтты автоматты қосып көреді; репозиторий саясаты тыйым салса, Settings → Pages баптауы қажет. Жергілікті build жасау өздігінен жариялау емес.
 
 ## Құрылым
 
