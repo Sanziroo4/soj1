@@ -5,16 +5,20 @@ export function LabVisual({
   values,
   state,
   finished,
+  ready,
+  started,
   onValue,
 }: {
   id: number;
   values: number[];
   state: State;
   finished: boolean;
+  ready: boolean;
+  started: boolean;
   onValue: (i: number, v: number) => void;
 }) {
   const r = state.regs,
-    valid = finished && !state.error;
+    valid = (ready || finished) && !state.error;
   if (id === 1) {
     const max = Math.max(1, ...values.map(Math.abs));
     return (
@@ -75,14 +79,22 @@ export function LabVisual({
       <div className="lab-visual">
         <div className="grade-display">
           <strong>
-            {valid ? (r[16] === -1 ? "!" : String.fromCharCode(r[16])) : "?"}
+            {valid
+              ? r[16] === -1
+                ? "!"
+                : String.fromCharCode(r[16])
+              : started && [65, 66, 67, 68, 70].includes(r[16])
+                ? String.fromCharCode(r[16])
+                : "?"}
           </strong>
           <span>
             {valid
               ? r[16] === -1
                 ? "Диапазоннан тыс"
                 : "MIPS таңдаған баға"
-              : "Нәтижені орындап көріңіз"}
+              : started
+                ? "Ағымдағы кандидат · шарттар тексерілуде"
+                : "Нәтижені орындап көріңіз"}
           </span>
         </div>
         <div className="grade-meter">
@@ -138,11 +150,11 @@ export function LabVisual({
           <line className="axis" x1="35" y1={Y(0)} x2="395" y2={Y(0)} />
           <line className="axis" x1={X(0)} y1="20" x2={X(0)} y2="275" />
           <path
-            className={`curve ${valid && r[17] === 1 ? "selected" : ""}`}
+            className={`curve ${started && r[17] === 1 ? "selected" : ""}`}
             d={`M${X(-10)},${Y(-15)} L${X(0)},${Y(5)}`}
           />
           <path
-            className={`curve ${valid && r[17] === 2 ? "selected" : ""}`}
+            className={`curve ${started && r[17] === 2 ? "selected" : ""}`}
             d={
               "M" +
               Array.from(
@@ -152,7 +164,7 @@ export function LabVisual({
             }
           />
           <path
-            className={`curve ${valid && r[17] === 3 ? "selected" : ""}`}
+            className={`curve ${started && r[17] === 3 ? "selected" : ""}`}
             d={`M${X(5)},${Y(5)} L${X(15)},${Y(-5)}`}
           />
           {[
@@ -186,6 +198,8 @@ export function LabVisual({
               </strong>{" "}
               · {["", "2x + 5", "x² − 1", "10 − x"][r[17]]}
             </>
+          ) : started ? (
+            "Белсенді тармақ таңдалуда, есептеу жалғасады…"
           ) : (
             "Нүктені көру үшін бағдарламаны орындаңыз."
           )}

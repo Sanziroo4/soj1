@@ -1,3 +1,5 @@
+import { useGuidedDemo } from "./useGuidedDemo";
+import { ExecutionFlow } from "./ExecutionFlow";
 import { IntegerInput } from "./IntegerInput";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Copy, Download, Upload, ArrowRight, Check, Code2 } from "lucide-react";
@@ -8,13 +10,15 @@ import { Controls } from "./Controls";
 import { usePlayback } from "./usePlayback";
 import { LabVisual } from "./LabVisual";
 export function Lab({
-  active,
   selectedId: id,
   onSelect: setId,
+  demo = false,
+  onComplete,
 }: {
-  active: boolean;
   selectedId: number;
   onSelect: (id: number) => void;
+  demo?: boolean;
+  onComplete?: () => void;
 }) {
   return (
     <>
@@ -39,11 +43,19 @@ export function Lab({
           <Download size={16} />5 .asm архиві
         </button>
       </div>
-      <LabTask key={id} id={id} active={active} />
+      <LabTask key={id} id={id} demo={demo} onComplete={onComplete} />
     </>
   );
 }
-function LabTask({ id, active }: { id: number; active: boolean }) {
+function LabTask({
+  id,
+  demo = false,
+  onComplete,
+}: {
+  id: number;
+  demo?: boolean;
+  onComplete?: () => void;
+}) {
   const task = tasks[id - 1];
   const [values, setValues] = useState(task.inputs.map((i) => i.value)),
     [code, setCode] = useState(task.code),
@@ -59,28 +71,35 @@ function LabTask({ id, active }: { id: number; active: boolean }) {
       return { trace: [], program: null, error: (e as Error).message };
     }
   }, [code, values]);
-  const play = usePlayback(Math.max(0, execution.trace.length - 1), active),
+  const play = usePlayback(Math.max(0, execution.trace.length - 1)),
     state = execution.trace[Math.min(play.index, execution.trace.length - 1)],
     finished = !!state?.halted;
+  useGuidedDemo(
+    play,
+    Math.max(0, execution.trace.length - 1),
+    demo,
+    onComplete,
+  );
   useEffect(() => {
     const el = sourceView.current,
       line = el?.querySelector(".executing");
-    if (el && line && active) {
+    if (el && line) {
       const a = el.getBoundingClientRect(),
         b = line.getBoundingClientRect();
       if (b.top < a.top || b.bottom > a.bottom)
         el.scrollTop += b.top - a.top - el.clientHeight / 2;
     }
-  }, [play.index, active, edit]);
+  }, [play.index, edit]);
   function reset() {
     play.setIndex(0);
     play.setPlaying(false);
     setMessage("");
   }
-  function value(i: number, v: number) {
+  function value(i: number, v: number, auto = false) {
     if (!Number.isInteger(v) || v < -2147483648 || v > 2147483647) return;
     setValues((a) => a.map((n, j) => (i === j ? v : n)));
     reset();
+    if (auto) play.setPlaying(true);
   }
   const branches = execution.trace
     .slice(0, play.index + 1)
@@ -103,7 +122,11 @@ function LabTask({ id, active }: { id: number; active: boolean }) {
     }
   }
   return (
-    <div className="lab-workspace">
+    <div
+      className="lab-workspace"
+      ref={play.viewportRef}
+      data-in-view={play.inView}
+    >
       <div className="lab-left">
         <div className="panel task-panel">
           <span className="eyebrow">ТАПСЫРМА 0{id} / 05</span>
@@ -136,6 +159,31 @@ function LabTask({ id, active }: { id: number; active: boolean }) {
               </label>
             ))}
           </div>
+          <div className="lab-run-actions">
+            <button
+              className="primary"
+              disabled={!state}
+              onClick={() =>
+                play.playing ? play.setPlaying(false) : play.start()
+              }
+            >
+              {play.playing ? "Орындауды кідірту" : "Есепті орындау"}
+            </button>
+            <span>
+              {state?.halted
+                ? "✓ Аяқталды"
+                : play.playing
+                  ? "● Автоматты орындалуда"
+                  : "Мәнді енгізіп, орындаңыз"}
+            </span>
+          </div>
+          {state && execution.program && (
+            <ExecutionFlow
+              program={execution.program}
+              state={state}
+              playing={play.playing}
+            />
+          )}
           {execution.error ? (
             <p role="alert" className="error">
               {execution.error}
@@ -147,7 +195,18 @@ function LabTask({ id, active }: { id: number; active: boolean }) {
                 values={values}
                 state={state}
                 finished={finished}
-                onValue={value}
+                ready={
+                  finished ||
+                  execution.trace
+                    .slice(0, play.index + 1)
+                    .some(
+                      (s) =>
+                        s.steps > 0 &&
+                        s.pc === execution.program?.labels.output,
+                    )
+                }
+                started={play.index > 0}
+                onValue={(i, v) => value(i, v, true)}
               />
             )
           )}
@@ -168,7 +227,7 @@ function LabTask({ id, active }: { id: number; active: boolean }) {
             {execution.error ||
               state?.error ||
               (state?.steps === 0
-                ? "Енгізілген сандар syscall 5 арқылы ретімен оқылады. Қадамдап орындауды бастаңыз."
+                ? "Енгізілген сандар syscall 5 арқылы ретімен оқылады. «Есепті орындау» батырмасын бір рет басыңыз."
                 : state?.halted
                   ? "Бағдарлама аяқталды. Нәтижені, регистрлерді және консольді салыстырыңыз."
                   : state?.branch

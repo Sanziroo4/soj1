@@ -1,3 +1,5 @@
+import { Controls } from "./Controls";
+import { usePlayback } from "./usePlayback";
 import { IntegerInput } from "./IntegerInput";
 import { useState } from "react";
 import { format } from "../model/mips";
@@ -6,8 +8,14 @@ export function MemoryLesson() {
   const [level, setLevel] = useState(0),
     [retrieved, setRetrieved] = useState(false);
   const names = ["Регистр", "Кэш", "RAM"];
+  const play = usePlayback(level + 2);
+  const current = level - play.index + 1;
   return (
-    <div className="memory-section">
+    <div
+      className="memory-section"
+      ref={play.viewportRef}
+      data-memory-step={play.index}
+    >
       <div>
         <span className="eyebrow">ДЕРЕКТЕР ҚАЙДА ТҰРАДЫ?</span>
         <h3>Бір дерек. Үш түрлі қашықтық.</h3>
@@ -22,7 +30,9 @@ export function MemoryLesson() {
               className={level === i ? "active" : ""}
               onClick={() => {
                 setLevel(i);
-                setRetrieved(false);
+                setRetrieved(true);
+                play.setIndex(0);
+                play.setPlaying(true);
               }}
               key={n}
             >
@@ -39,7 +49,13 @@ export function MemoryLesson() {
             ][level]
           }
         </p>
-        <button onClick={() => setRetrieved(true)}>
+        <button
+          onClick={() => {
+            setRetrieved(true);
+            play.setIndex(0);
+            play.setPlaying(true);
+          }}
+        >
           42 мәнін ALU-ға жеткізу <ArrowRight size={15} />
         </button>
         <p className="lime" aria-live="polite">
@@ -52,7 +68,10 @@ export function MemoryLesson() {
             : "Деректің жолын көру үшін батырманы басыңыз."}
         </p>
       </div>
-      <div className={`memory-stack retrieved-${retrieved ? level : "none"}`}>
+      <div
+        className={`memory-stack memory-animated`}
+        data-current={retrieved ? current : "none"}
+      >
         <div>
           <Cpu />
           <span>
@@ -74,6 +93,32 @@ export function MemoryLesson() {
           </span>
           <code>42</code>
         </div>
+        <div
+          className={`memory-alu ${retrieved && current === -1 ? "active" : ""}`}
+        >
+          <Cpu />
+          <span>
+            ALU
+            <strong>
+              {retrieved && current === -1 ? "Операнд дайын" : "42 мәнін күту"}
+            </strong>
+          </span>
+          <code>{retrieved && current === -1 ? "42" : "—"}</code>
+        </div>
+        {retrieved && (
+          <>
+            <p className="memory-status" aria-live="polite">
+              {play.index === 0
+                ? "Деректі іздеу…"
+                : current === -1
+                  ? "✓ 42 мәні ALU-ға жетті"
+                  : `${names[current]} → 42 мәні тасымалдануда`}
+            </p>
+            <section className="memory-controls">
+              <Controls {...play} max={level + 2} />
+            </section>
+          </>
+        )}
         <small>
           Бұл жеке ұғымдық көрініс. Оқу интерпретаторында кэш пен RAM таймингі
           модельденбейді.

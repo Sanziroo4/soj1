@@ -1,3 +1,4 @@
+import { useGuidedDemo } from "./useGuidedDemo";
 import { IntegerInput } from "./IntegerInput";
 import { useMemo, useState } from "react";
 import { Controls } from "./Controls";
@@ -11,11 +12,18 @@ import {
 } from "../model/mips";
 import { stages } from "../model/pipeline";
 type Op = "add" | "lw" | "sw" | "beq";
-export function Instruction({ active }: { active: boolean }) {
+export function Instruction({
+  demo = false,
+  onComplete,
+}: {
+  demo?: boolean;
+  onComplete?: () => void;
+}) {
   const [op, setOp] = useState<Op>("add"),
     [a, setA] = useState(7),
     [b, setB] = useState(5);
-  const play = usePlayback(5, active);
+  const play = usePlayback(5);
+  useGuidedDemo(play, 5, demo, onComplete);
   const reset = () => {
     play.setIndex(0);
     play.setPlaying(false);
@@ -105,7 +113,11 @@ export function Instruction({ active }: { active: boolean }) {
           </button>
         ))}
       </div>
-      <div className="instruction-grid">
+      <div
+        className="instruction-grid"
+        ref={play.viewportRef}
+        data-in-view={play.inView}
+      >
         <div className="panel execution">
           <div className="panel-top">
             <code className="lime">

@@ -1,14 +1,26 @@
+import { useGuidedDemo } from "./useGuidedDemo";
 import { useState } from "react";
 import { pipeline, stages } from "../model/pipeline";
 import type { PipelineMode } from "../model/pipeline";
 import { Controls } from "./Controls";
 import { usePlayback } from "./usePlayback";
-export function Pipeline({ active }: { active: boolean }) {
+export function Pipeline({
+  demo = false,
+  onComplete,
+}: {
+  demo?: boolean;
+  onComplete?: () => void;
+}) {
   const [mode, setMode] = useState<PipelineMode>("independent");
   const p = pipeline(mode),
-    play = usePlayback(p.cycles, active);
+    play = usePlayback(p.cycles);
+  useGuidedDemo(play, p.cycles, demo, onComplete);
   return (
-    <div className="panel pipeline">
+    <div
+      className="panel pipeline"
+      ref={play.viewportRef}
+      data-in-view={play.inView}
+    >
       <div className="scenario-tabs">
         {(["independent", "stall", "forward"] as PipelineMode[]).map((m, i) => (
           <button
@@ -17,7 +29,7 @@ export function Pipeline({ active }: { active: boolean }) {
             onClick={() => {
               setMode(m);
               play.setIndex(0);
-              play.setPlaying(false);
+              play.setPlaying(true);
             }}
           >
             {
@@ -28,6 +40,23 @@ export function Pipeline({ active }: { active: boolean }) {
               ][i]
             }
           </button>
+        ))}
+      </div>
+      <div
+        className="pipeline-live"
+        aria-label="Пайплайндағы ағымдағы командалар"
+      >
+        {p.rows.map((row, i) => (
+          <div
+            key={i}
+            className={
+              row.cells[play.index - 1] === "STALL" ? "hazard-active" : ""
+            }
+          >
+            <span>I{i + 1}</span>
+            <code>{row.code}</code>
+            <strong>{row.cells[play.index - 1] || "Күту"}</strong>
+          </div>
         ))}
       </div>
       <div className="table-scroll">

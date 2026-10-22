@@ -7,6 +7,8 @@ export function Controls({
   max,
   speed,
   setSpeed,
+  loop,
+  setLoop,
 }: {
   playing: boolean;
   setPlaying: (v: boolean) => void;
@@ -15,11 +17,14 @@ export function Controls({
   max: number;
   speed: number;
   setSpeed: (v: number) => void;
+  loop?: boolean;
+  setLoop?: (v: boolean) => void;
 }) {
   return (
     <div className="controls">
       <button
         className="primary"
+        disabled={max === 0}
         onClick={() => {
           if (index >= max) setIndex(0);
           setPlaying(!playing);
@@ -69,8 +74,20 @@ export function Controls({
           <option value={1400}>0.5×</option>
           <option value={700}>1×</option>
           <option value={350}>2×</option>
+          <option value={175}>4×</option>
+          <option value={87.5}>8×</option>
         </select>
       </label>
+      {setLoop && (
+        <label className="loop-control">
+          <input
+            type="checkbox"
+            checked={loop}
+            onChange={(e) => setLoop(e.target.checked)}
+          />
+          Қайталау
+        </label>
+      )}
       <span className="mono dim">
         {index} / {max}
       </span>

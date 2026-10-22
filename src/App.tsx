@@ -12,6 +12,8 @@ import {
   X,
   Download,
   BookOpen,
+  Play,
+  Pause,
 } from "lucide-react";
 import { Chip, Processor } from "./components/Processor";
 import { Instruction } from "./components/Instruction";
@@ -21,14 +23,12 @@ import { Lab } from "./components/Lab";
 import { nav, speaking } from "./content/lessons";
 import { downloadAll } from "./model/download";
 const routes = [
-  ...nav
-    .slice(0, 5)
-    .map((n, i) => ({
-      id: n.id,
-      title: n.label,
-      speech: speaking[i],
-      task: 0,
-    })),
+  ...nav.slice(0, 5).map((n, i) => ({
+    id: n.id,
+    title: n.label,
+    speech: speaking[i],
+    task: 0,
+  })),
   ...[1, 2, 3, 4, 5].map((task) => ({
     id: "lab",
     title: `Зертхана · ${task}/5`,
@@ -72,27 +72,40 @@ export default function App() {
   const [processorReveal, setProcessorReveal] = useState(0),
     [active, setActive] = useState("intro"),
     [defense, setDefense] = useState(false),
+    [autoPresent, setAutoPresent] = useState(false),
     [route, setRoute] = useState(0),
     [labId, setLabId] = useState(1),
     [fullscreen, setFullscreen] = useState(false),
     [notice, setNotice] = useState("");
   useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const visible = entries
-          .filter((e) => e.isIntersecting)
-          .sort((a, b) => b.intersectionRatio - a.intersectionRatio);
-        if (visible[0]) setActive(visible[0].target.id);
-      },
-      { rootMargin: "-15% 0px -50% 0px", threshold: [0, 0.1, 0.3, 0.5] },
-    );
-    document
-      .querySelectorAll("main > section")
-      .forEach((s) => observer.observe(s));
+    let frame = 0;
+    const update = () => {
+      frame = 0;
+      const sections = Array.from(
+        document.querySelectorAll<HTMLElement>("main > section"),
+      );
+      let current = sections[0]?.id || "intro";
+      for (const section of sections) {
+        if (
+          section.getBoundingClientRect().top <=
+          Math.max(110, innerHeight * 0.25)
+        )
+          current = section.id;
+      }
+      setActive(current);
+    };
+    const schedule = () => {
+      if (!frame) frame = requestAnimationFrame(update);
+    };
+    window.addEventListener("scroll", schedule, { passive: true });
+    window.addEventListener("resize", schedule);
+    schedule();
     const handler = () => setFullscreen(!!document.fullscreenElement);
     document.addEventListener("fullscreenchange", handler);
     return () => {
-      observer.disconnect();
+      cancelAnimationFrame(frame);
+      window.removeEventListener("scroll", schedule);
+      window.removeEventListener("resize", schedule);
       document.removeEventListener("fullscreenchange", handler);
     };
   }, []);
@@ -102,25 +115,40 @@ export default function App() {
       .forEach((s) => s.setAttribute("data-active", String(s.id === active)));
   }, [active]);
   function go(id: string) {
-    document
-      .getElementById(id)
-      ?.scrollIntoView({
-        behavior: matchMedia("(prefers-reduced-motion: reduce)").matches
-          ? "instant"
-          : "smooth",
-        block: "start",
-      });
+    document.getElementById(id)?.scrollIntoView({
+      behavior: matchMedia("(prefers-reduced-motion: reduce)").matches
+        ? "instant"
+        : "smooth",
+      block: "start",
+    });
     setActive(id);
   }
   function reveal() {
     go("structure");
     setProcessorReveal((i) => i + 1);
   }
-  function move(i: number) {
+  function move(i: number, automatic = false) {
+    if (!automatic) setAutoPresent(false);
+    if (routes[i].id === "structure") setProcessorReveal((n) => n + 1);
     setRoute(i);
     if (routes[i].task) setLabId(routes[i].task);
     go(routes[i].id);
   }
+  function advance() {
+    if (route < routes.length - 1) move(route + 1, true);
+    else setAutoPresent(false);
+  }
+  useEffect(() => {
+    if (!defense || !autoPresent) return;
+    const id = routes[route].id;
+    if (["instruction", "pipeline", "lab"].includes(id)) return;
+    if (route === routes.length - 1) {
+      setAutoPresent(false);
+      return;
+    }
+    const t = setTimeout(() => advance(), id === "structure" ? 8500 : 6500);
+    return () => clearTimeout(t);
+  }, [defense, autoPresent, route]);
   async function full() {
     try {
       if (document.fullscreenElement) await document.exitFullscreen();
@@ -245,7 +273,7 @@ export default function App() {
             title="Сыртынан чип. Ішінде — тұтас жүйе."
             description="Процессор — нұсқауларды орындайтын есептеу құрылғысы. Бөлікті таңдап, оның басқалармен қалай жұмыс істейтінін көр."
           />
-          <Processor active={active === "structure"} reveal={processorReveal} />
+          <Processor reveal={processorReveal} />
           <MemoryLesson />
           <a className="next-link" href="#instruction">
             Енді бір команданың жолын бақылайық <ArrowRight size={17} />
@@ -258,7 +286,10 @@ export default function App() {
             title="7 + 5. Бірақ процессор үшін қалай?"
             description="Команданы алу сәтінен нәтижені жазуға дейін. Әр кезеңді тоқтатып, нақты мәндерді зертте."
           />
-          <Instruction active={active === "instruction"} />
+          <Instruction
+            demo={defense && autoPresent && routes[route].id === "instruction"}
+            onComplete={advance}
+          />
           <a className="next-link" href="#pipeline">
             Ал бірнеше команда қатар орындалса ше? <ArrowRight size={17} />
           </a>
@@ -270,7 +301,10 @@ export default function App() {
             title="Бір ырғақ. Бірнеше команда."
             description="Пайплайн әртүрлі командалардың кезеңдерін қабаттастырады. Бұл әр команданың өз нәтижесіне жететін жолын қысқартпайды."
           />
-          <Pipeline active={active === "pipeline"} />
+          <Pipeline
+            demo={defense && autoPresent && routes[route].id === "pipeline"}
+            onComplete={advance}
+          />
           <a className="next-link" href="#basics">
             MIPS тілін түсінуге көшейік <ArrowRight size={17} />
           </a>
@@ -295,9 +329,13 @@ export default function App() {
             description="Санды өзгерт. Кодты орында. Тармақтың неге таңдалғанын бақыла. Әр нәтиженің артында — орындалған MIPS командасы."
           />
           <Lab
-            active={active === "lab"}
             selectedId={labId}
-            onSelect={setLabId}
+            onSelect={(id) => {
+              setAutoPresent(false);
+              setLabId(id);
+            }}
+            demo={defense && autoPresent && routes[route].id === "lab"}
+            onComplete={advance}
           />
         </section>
         <section className="content-section" id="defense">
@@ -332,7 +370,8 @@ export default function App() {
                   className="primary large"
                   onClick={() => {
                     setDefense(true);
-                    move(0);
+                    setAutoPresent(true);
+                    move(0, true);
                   }}
                 >
                   Қорғау маршрутын бастау <ArrowRight size={17} />
@@ -409,6 +448,19 @@ export default function App() {
           <p>{routes[route].speech}</p>
           <div className="presentation-controls">
             <button
+              className="auto-present"
+              aria-label={
+                autoPresent ? "Авто көрсетуді кідірту" : "Авто көрсету"
+              }
+              onClick={() => {
+                if (route === routes.length - 1) move(0, true);
+                setAutoPresent((v) => !v);
+              }}
+            >
+              {autoPresent ? <Pause size={16} /> : <Play size={16} />}
+              <span>{autoPresent ? "Кідірту" : "Авто көрсету"}</span>
+            </button>
+            <button
               aria-label="Маршруттың алдыңғы бөлімі"
               disabled={route === 0}
               onClick={() => move(route - 1)}
@@ -433,6 +485,7 @@ export default function App() {
               aria-label="Қорғау режимін жабу"
               onClick={() => {
                 setDefense(false);
+                setAutoPresent(false);
                 if (document.fullscreenElement) void document.exitFullscreen();
               }}
             >

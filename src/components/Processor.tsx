@@ -1,3 +1,4 @@
+import { usePlayback } from "./usePlayback";
 import { useState, useEffect } from "react";
 import { ArrowUpRight, RotateCcw, Plus, Minus } from "lucide-react";
 import { parts } from "../content/lessons";
@@ -169,13 +170,8 @@ export function Chip({ onClick }: { onClick: () => void }) {
     </button>
   );
 }
-export function Processor({
-  active,
-  reveal,
-}: {
-  active: boolean;
-  reveal: number;
-}) {
+export function Processor({ reveal }: { reveal: number }) {
+  const { viewportRef, inView } = usePlayback(0);
   const [open, setOpen] = useState(false),
     [selected, setSelected] = useState("alu"),
     [zoom, setZoom] = useState(1);
@@ -186,7 +182,7 @@ export function Processor({
     parts.find((part) => part.id === selected) ||
     links[selected as keyof typeof links];
   return (
-    <div className="structure-grid">
+    <div className="structure-grid" ref={viewportRef}>
       <div className="panel diagram-panel">
         <div className="panel-top">
           <span className="eyebrow">
@@ -199,7 +195,7 @@ export function Processor({
         </div>
         <div className="diagram-scroll">
           <svg
-            className={`processor-map ${open ? "expanded" : "assembled"} ${active ? "" : "inactive"}`}
+            className={`processor-map ${open ? "expanded" : "assembled"} ${inView ? "" : "inactive"}`}
             style={{ width: `${zoom * 100}%` }}
             viewBox="0 0 720 565"
             role="group"

@@ -2799,7 +2799,8 @@ footer button {
   }
 }
 
-section[data-active="false"] * {
+section#intro[data-active="false"] *,
+[data-in-view="false"] * {
   animation-play-state: paused !important;
 }
 .cpu-part.connected rect {
@@ -2896,4 +2897,231 @@ section[data-active="false"] * {
   .operand-inputs .integer-field {
     width: 105px;
   }
+}
+.loop-control {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  font-size: 9px;
+  gap: 5px;
+  white-space: nowrap;
+}
+.loop-control input {
+  width: 12px;
+  height: 12px;
+  accent-color: var(--lime);
+  margin: 0;
+}
+.lab-run-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 20px 0 16px;
+  flex-wrap: wrap;
+}
+.lab-run-actions > span {
+  font-size: 10px;
+  color: #b1c79a;
+}
+.execution-flow {
+  border: 1px solid #3c502e;
+  background: #131f13;
+  padding: 14px;
+  border-radius: 6px;
+  margin-top: 15px;
+}
+.flow-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
+.flow-heading .eyebrow {
+  font-size: 8px;
+  letter-spacing: 1px;
+}
+.flow-heading > span:last-child {
+  font-size: 9px;
+  color: var(--lime);
+}
+.flow-nodes {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 15px;
+}
+.flow-nodes > div {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 5px;
+  border: 1px solid #35462c;
+  border-radius: 4px;
+  padding: 10px 7px;
+  min-height: 65px;
+  min-width: 0;
+}
+.flow-nodes small {
+  font-size: 9px;
+}
+.flow-nodes strong {
+  font:
+    10px "IBM Plex Mono",
+    monospace;
+  overflow-wrap: anywhere;
+  color: #b0c39d;
+}
+.flow-nodes .lit {
+  border-color: #7d9f4c;
+  background: #203219;
+}
+.flow-nodes .lit strong {
+  color: var(--lime);
+}
+.flow-nodes b {
+  position: absolute;
+  right: -13px;
+  top: 30%;
+  font-weight: 400;
+  color: var(--lime);
+}
+.execution-flow.running .flow-nodes .lit strong {
+  animation: flow-value 0.35s ease-out;
+}
+.execution-flow > p {
+  font:
+    10px/1.8 "IBM Plex Mono",
+    monospace;
+  color: #c2d6ad;
+  margin-top: 12px;
+  overflow-wrap: anywhere;
+}
+.execution-flow > small {
+  display: block;
+  font-size: 8px;
+  margin-top: 8px;
+}
+.pipeline-live {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+.pipeline-live > div {
+  flex: 1;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  padding: 14px;
+  border: 1px solid #4b6038;
+  border-radius: 5px;
+  min-width: 0;
+  background: #192718;
+}
+.pipeline-live span {
+  font:
+    11px "IBM Plex Mono",
+    monospace;
+  color: var(--lime);
+}
+.pipeline-live code {
+  font-size: 10px;
+  color: #b9cfa7;
+  overflow-wrap: anywhere;
+}
+.pipeline-live strong {
+  margin-left: auto;
+  color: var(--lime);
+  font:
+    13px "IBM Plex Mono",
+    monospace;
+}
+.pipeline-live .hazard-active {
+  border-color: #b48b52;
+  background: #32251a;
+}
+.pipeline-live .hazard-active strong {
+  color: var(--orange);
+}
+.memory-animated > div {
+  opacity: 0.5;
+  transition:
+    border-color 0.3s,
+    background 0.3s,
+    opacity 0.3s;
+}
+.memory-animated[data-current="0"] > div:nth-child(1),
+.memory-animated[data-current="1"] > div:nth-child(2),
+.memory-animated[data-current="2"] > div:nth-child(3),
+.memory-animated[data-current="-1"] > div:nth-child(4) {
+  opacity: 1;
+  border-color: var(--lime);
+  background: #25371b;
+}
+.memory-animated .memory-alu {
+  width: 65%;
+  opacity: 1;
+}
+.memory-stack .controls {
+  align-self: stretch;
+  padding: 12px 0;
+  justify-content: center;
+}
+.memory-status {
+  font-size: 11px;
+  color: var(--lime);
+}
+.presenting .execution-flow p {
+  font-size: 13px;
+}
+.presenting .flow-nodes strong {
+  font-size: 13px;
+}
+@keyframes flow-value {
+  from {
+    opacity: 0.35;
+    transform: translateX(-5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+@media (max-width: 850px) {
+  .pipeline-live {
+    flex-direction: column;
+  }
+  .pipeline-live > div {
+    padding: 10px;
+  }
+  .auto-present span {
+    display: none;
+  }
+}
+@media (max-width: 540px) {
+  .flow-nodes {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .loop-control {
+    font-size: 8px;
+  }
+  .memory-stack .controls {
+    flex-wrap: wrap;
+  }
+  .presentation-controls {
+    gap: 4px;
+  }
+  .presenting .flow-nodes strong {
+    font-size: 11px;
+  }
+}
+
+.memory-controls {
+  width: 100%;
+}
+.execution-flow.running .status-dot {
+  animation: blink 1s infinite;
+}
+.memory-animated > div:after {
+  content: "↑" !important;
 }
