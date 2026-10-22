@@ -6,6 +6,9 @@
 }
 .integer-field .integer-control > input.integer-value {
   width: 100%;
+  padding-right: 16px;
+}
+.integer-field .integer-control[data-sign-toggle="true"] > input.integer-value {
   padding-right: 62px;
 }
 .integer-field .integer-sign {
@@ -48,7 +51,7 @@
     display: grid;
     gap: 8px;
   }
-  .integer-field .integer-control > input.integer-value {
+  .integer-field .integer-control[data-sign-toggle] > input.integer-value {
     padding-left: 12px;
     padding-right: 12px;
   }

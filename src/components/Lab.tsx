@@ -189,6 +189,7 @@ function LabTask({
                 ) : (
                   <IntegerInput
                     label={`Зертхана ${x.name}`}
+                    showSignToggle={id !== 2 && id !== 4}
                     value={values[i]}
                     onDirty={reset}
                     onChange={(v) => value(i, v)}

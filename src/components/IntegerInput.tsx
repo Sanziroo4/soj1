@@ -17,11 +17,13 @@ export function IntegerInput({
   onChange,
   onDirty,
   label,
+  showSignToggle = true,
 }: {
   value: number;
   onChange: (value: number) => void;
   onDirty?: () => void;
   label: string;
+  showSignToggle?: boolean;
 }) {
   const [draft, setDraft] = useState(String(value));
   const input = useRef<HTMLInputElement>(null);
@@ -47,7 +49,7 @@ export function IntegerInput({
   }
   return (
     <span className="integer-field">
-      <span className="integer-control">
+      <span className="integer-control" data-sign-toggle={showSignToggle}>
         <input
           ref={input}
           className="integer-value"
@@ -81,17 +83,19 @@ export function IntegerInput({
             if (!valid) setDraft(String(value));
           }}
         />
-        <button
-          type="button"
-          className="integer-sign"
-          aria-label={`${label}: таңбаны өзгерту`}
-          title="Оң / теріс сан"
-          disabled={complete(draft) && Number(draft) === -2147483648}
-          onPointerDown={(e) => e.preventDefault()}
-          onClick={toggleSign}
-        >
-          ±
-        </button>
+        {showSignToggle && (
+          <button
+            type="button"
+            className="integer-sign"
+            aria-label={`${label}: таңбаны өзгерту`}
+            title="Оң / теріс сан"
+            disabled={complete(draft) && Number(draft) === -2147483648}
+            onPointerDown={(e) => e.preventDefault()}
+            onClick={toggleSign}
+          >
+            ±
+          </button>
+        )}
       </span>
       {!valid && (
         <small className="input-hint">
